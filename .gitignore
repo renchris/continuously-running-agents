@@ -16,7 +16,7 @@
 # Dependencies
 node_modules/
 
-# Lock files (bun uses bun.lockb)
+# Lock files from other package managers (bun uses bun.lock)
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
