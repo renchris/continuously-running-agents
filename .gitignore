@@ -12,3 +12,9 @@
 *.tmp
 *.bak
 *~
+
+# Node modules
+node_modules/
+
+# Package lock (not needed for documentation repo)
+package-lock.json

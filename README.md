@@ -264,6 +264,48 @@ The knowledge base supports progressive enhancement:
 - **Learning Paths**: 5 structured tutorials
 - **Reading Time**: ~6 hours for complete knowledge base
 
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
+
+- **Semantic commit conventions** - How to write clear, consistent commits
+- **Changesets workflow** - Managing versions and changelogs
+- **Pull request guidelines** - Best practices for PRs
+- **Documentation standards** - Style guide for adding content
+
+### Quick Contribution Flow
+
+```bash
+# 1. Fork and clone
+git clone https://github.com/yourusername/continuously-running-agents.git
+
+# 2. Create feature branch
+git checkout -b feat/your-feature
+
+# 3. Make changes and create changeset
+npm run changeset
+
+# 4. Commit using semantic format
+git commit -m "feat: your feature description"
+
+# 5. Push and create PR
+git push origin feat/your-feature
+```
+
+### Commit Format
+
+We follow semantic commits with specific rules:
+
+- **Lowercase** (except proper nouns, titles, acronyms)
+- **Present tense** (imperative mood)
+- **No redundant verbs** (e.g., "feat: user auth" not "feat: add user auth")
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete guidelines.
+
+## License
+
+MIT License - See LICENSE file for details
+
 ---
 
 **Built with**: Claude Code (recursively!)

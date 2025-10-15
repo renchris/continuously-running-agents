@@ -1,0 +1,17 @@
+{
+  "name": "knowledge-base",
+  "version": "1.0.0",
+  "description": "> Comprehensive guide to building and running autonomous Claude Code agents 24/7, based on research and best practices from the community (March-October 2025).",
+  "main": "index.js",
+  "scripts": {
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7"
+  }
+}
