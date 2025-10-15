@@ -192,7 +192,7 @@ This interactive CLI will:
 2. Ask for a summary of the change
 3. Create a `.changeset/*.md` file
 
-**Tip**: Write clear summaries - they become your changelog entries!
+**Tip**: Write clear summaries - they become your changelog entries **and GitHub release notes**!
 
 ### Changeset Types
 
@@ -241,7 +241,12 @@ git push origin feat/agent-monitoring
    - Updates version in `package.json`
    - Updates `CHANGELOG.md` with rich GitHub links
    - Deletes consumed changeset files
-4. **Merge Version PR**: Creates GitHub release with tag
+4. **Merge Version PR**: Automatically creates GitHub release
+   - **Release notes include full changelog** - Your changeset summaries appear in the release
+   - Git tag created (v2.0.0, v2.1.0, etc.)
+   - Formatted with Major/Minor/Patch sections
+   - Includes commit links and contributor attribution
+   - Visible at https://github.com/renchris/continuously-running-agents/releases
 
 ### Manual Release Process (if needed)
 
@@ -319,8 +324,13 @@ We have two workflows:
 **`.github/workflows/release.yml`** (runs on push to main):
 - Detects changesets
 - Creates "Version Packages" PR
-- Updates CHANGELOG.md
-- Creates GitHub releases
+- Updates CHANGELOG.md with `@changesets/changelog-github`
+  - Links to commits, PRs, and issues automatically
+  - Attributes contributors (Thanks @username!)
+- **Creates GitHub releases** with `createGithubReleases: true`
+  - Release notes contain full changelog content
+  - Formatted with Major/Minor/Patch sections
+  - Same format as [Next.js releases](https://github.com/vercel/next.js/releases)
 
 **`.github/workflows/pr-check.yml`** (runs on PRs):
 - Validates changeset exists
