@@ -1,5 +1,5 @@
 ---
-"knowledge-base": major
+"continuously-running-agents": major
 ---
 
 comprehensive knowledge base for continuously running AI agents

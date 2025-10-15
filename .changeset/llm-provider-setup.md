@@ -1,5 +1,5 @@
 ---
-"knowledge-base": minor
+"continuously-running-agents": minor
 ---
 
 LLM provider setup with OVHCloud integration
