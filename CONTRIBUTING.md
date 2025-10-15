@@ -327,7 +327,8 @@ We have two workflows:
 - Updates CHANGELOG.md with `@changesets/changelog-github`
   - Links to commits, PRs, and issues automatically
   - Attributes contributors (Thanks @username!)
-- **Creates GitHub releases** with `createGithubReleases: true`
+- **Creates GitHub releases** automatically
+  - Uses `changesets/action@v1` with `createGithubReleases: true` (default)
   - Release notes contain full changelog content
   - Formatted with Major/Minor/Patch sections
   - Same format as [Next.js releases](https://github.com/vercel/next.js/releases)
