@@ -1,0 +1,38 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    name: Check PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check for changeset
+        run: |
+          if [ -z "$(ls -A .changeset/*.md 2>/dev/null | grep -v README)" ]; then
+            echo "❌ No changeset found. Please run 'bun changeset' to add a changeset."
+            echo ""
+            echo "💡 A changeset describes what changed in your PR and helps generate the changelog."
+            echo "   Run: bun changeset"
+            exit 1
+          else
+            echo "✅ Changeset found"
+            ls -la .changeset/*.md | grep -v README
+          fi
+
+      - name: Validate changeset format
+        run: bunx changeset status

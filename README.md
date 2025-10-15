@@ -273,7 +273,7 @@ The knowledge base supports progressive enhancement:
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 - **Semantic commit conventions** - How to write clear, consistent commits
-- **Changesets workflow** - Managing versions and changelogs
+- **Changesets workflow** - Automated versioning and changelog generation
 - **Pull request guidelines** - Best practices for PRs
 - **Documentation standards** - Style guide for adding content
 
@@ -288,6 +288,8 @@ git checkout -b feat/your-feature
 
 # 3. Make changes and create changeset
 bun changeset
+# Select: minor/patch/major
+# Summary: "clear description of your changes"
 
 # 4. Commit using semantic format
 git commit -m "feat: your feature description"
@@ -295,6 +297,14 @@ git commit -m "feat: your feature description"
 # 5. Push and create PR
 git push origin feat/your-feature
 ```
+
+### Automated Release Process
+
+When your PR is merged:
+1. GitHub Actions detects changeset
+2. Creates "Version Packages" PR automatically
+3. When merged, updates `CHANGELOG.md` and creates GitHub release
+4. No manual version management needed!
 
 ### Commit Format
 

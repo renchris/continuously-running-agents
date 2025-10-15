@@ -165,67 +165,191 @@ Use footer for:
 
 ## Changesets Workflow
 
-We use [changesets](https://github.com/changesets/changesets) to manage versions and generate changelogs.
+We use [changesets](https://github.com/changesets/changesets) to manage versions and generate changelogs. This is automated via GitHub Actions.
+
+### What are Changesets?
+
+Changesets are markdown files that describe changes made to the project. They:
+- Track what changed and why
+- Determine version bumps (major/minor/patch)
+- Generate changelog entries automatically
+- Create release notes
 
 ### Creating a Changeset
+
+**Every PR must include a changeset** (except for docs-only changes to README/CONTRIBUTING).
 
 After making changes, create a changeset:
 
 ```bash
 bun changeset
+# or
+bun changeset:add
 ```
 
-This will:
+This interactive CLI will:
 1. Ask what type of change (major, minor, patch)
 2. Ask for a summary of the change
 3. Create a `.changeset/*.md` file
+
+**Tip**: Write clear summaries - they become your changelog entries!
 
 ### Changeset Types
 
 Follow [semantic versioning](https://semver.org/):
 
-- **Major** (breaking change): `feat!: new API`, incompatible changes
-- **Minor** (new feature): `feat: new capability`, backwards-compatible
-- **Patch** (bug fix): `fix: error handling`, backwards-compatible fixes
+| Type | When to Use | Example |
+|------|-------------|---------|
+| **Major** | Breaking change, incompatible changes | `feat!: new coordination protocol` |
+| **Minor** | New feature, backwards-compatible | `feat: agent monitoring dashboard` |
+| **Patch** | Bug fix, backwards-compatible | `fix: broken links in 07-examples.md` |
+
+**For documentation**:
+- New major section/guide → `minor`
+- New subsection/examples → `patch`
+- Bug fixes/typos → `patch`
+- Breaking reorganization → `major`
 
 ### Example Changeset Flow
 
 ```bash
-# 1. Make your changes
+# 1. Create feature branch
 git checkout -b feat/agent-monitoring
 
+# 2. Make your changes
 # Edit files...
 
-# 2. Create changeset
+# 3. Create changeset
 bun changeset
 # Select: minor
 # Summary: "agent monitoring dashboard with real-time metrics"
 
-# 3. Commit everything (including the changeset)
+# 4. Commit everything (including the changeset)
 git add .
 git commit -m "feat: agent monitoring dashboard"
 
-# 4. Push and create PR
+# 5. Push and create PR
 git push origin feat/agent-monitoring
 ```
 
-### Release Process
+### What Happens Next (Automated)
 
-When ready to release:
+1. **PR Check**: GitHub Actions validates changeset exists
+2. **PR Merged**: Changesets bot detects unreleased changesets
+3. **Version PR Created**: Bot creates "chore: version packages" PR that:
+   - Consumes all changesets
+   - Updates version in `package.json`
+   - Updates `CHANGELOG.md` with rich GitHub links
+   - Deletes consumed changeset files
+4. **Merge Version PR**: Creates GitHub release with tag
+
+### Manual Release Process (if needed)
+
+If you need to release manually:
 
 ```bash
 # 1. Version packages (consumes changesets)
-bun version
+bun run version
 
-# 2. Review CHANGELOG.md
+# 2. Review CHANGELOG.md and package.json
 
 # 3. Commit version changes
 git add .
-git commit -m "chore: release v1.1.0"
+git commit -m "chore: version packages"
 
 # 4. Tag and push
 git tag v1.1.0
 git push --follow-tags
+```
+
+### Changeset Best Practices
+
+#### Good Changeset Summaries
+
+✅ **Clear and descriptive**:
+```markdown
+---
+"continuously-running-agents": minor
+---
+
+LLM provider setup with OVHCloud integration
+
+Adds comprehensive guide for setting up Anthropic API with OVHCloud VMs.
+Includes cost calculators, decision matrices, and resource requirements.
+```
+
+❌ **Too vague**:
+```markdown
+---
+"continuously-running-agents": patch
+---
+
+Updates
+```
+
+#### Multiple Changes in One PR
+
+If your PR includes multiple unrelated changes, create multiple changesets:
+
+```bash
+bun changeset  # For first change
+bun changeset  # For second change
+```
+
+Each changeset file will be processed independently.
+
+#### Skipping Changesets
+
+**Only skip changesets for**:
+- README updates (not content changes)
+- CONTRIBUTING.md updates
+- Code comment changes
+- `.gitignore` or config tweaks
+
+**Everything else needs a changeset**, including:
+- New documentation
+- Content updates
+- Examples
+- Bug fixes
+
+### GitHub Actions Integration
+
+We have two workflows:
+
+**`.github/workflows/release.yml`** (runs on push to main):
+- Detects changesets
+- Creates "Version Packages" PR
+- Updates CHANGELOG.md
+- Creates GitHub releases
+
+**`.github/workflows/pr-check.yml`** (runs on PRs):
+- Validates changeset exists
+- Checks changeset format
+- Fails if changeset missing
+
+### Troubleshooting
+
+**"No changeset found" error on PR**:
+```bash
+# Create a changeset
+bun changeset
+
+# Add and commit it
+git add .changeset/
+git commit -m "chore: changeset"
+git push
+```
+
+**Want to preview version bump**:
+```bash
+bun run version:preview
+# Shows what version would be without actually changing files
+```
+
+**Check current changeset status**:
+```bash
+bunx changeset status
+# Shows all pending changesets and what they'll do
 ```
 
 ## Pull Request Guidelines

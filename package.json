@@ -1,17 +1,32 @@
 {
-  "name": "knowledge-base",
+  "name": "continuously-running-agents",
   "version": "1.0.0",
-  "description": "> Comprehensive guide to building and running autonomous Claude Code agents 24/7, based on research and best practices from the community (March-October 2025).",
-  "main": "index.js",
+  "description": "Comprehensive guide to building and running autonomous Claude Code agents 24/7, based on research and best practices from the community (March-October 2025).",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/renchris/continuously-running-agents.git"
+  },
   "scripts": {
     "changeset": "changeset",
+    "changeset:add": "changeset add",
     "version": "changeset version",
-    "release": "changeset publish"
+    "version:preview": "changeset version --snapshot preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "claude-code",
+    "agents",
+    "autonomous-agents",
+    "tmux",
+    "continuous-agents",
+    "infrastructure",
+    "devops",
+    "documentation"
+  ],
+  "author": "renchris",
+  "license": "MIT",
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.1",
     "@changesets/cli": "^2.29.7"
   }
 }
