@@ -46,12 +46,15 @@ This knowledge base consolidates information from industry leaders like **Pieter
 5. **[05-cost-optimization.md](05-cost-optimization.md)** - Pricing strategies, caching, budgeting
 6. **[06-security.md](06-security.md)** - Server hardening, isolation, monitoring
 7. **[07-examples.md](07-examples.md)** - Real-world setups and working patterns
+8. **[08-llm-provider-setup.md](08-llm-provider-setup.md)** - API keys, subscriptions, OVHCloud integration
 
 ### Navigation by Topic
 
 **Infrastructure & Deployment**
 - VPS providers and setup → [01-infrastructure.md](01-infrastructure.md)
 - Server sizing and selection → [01-infrastructure.md](01-infrastructure.md#server-sizing-guidelines)
+- OVHCloud setup → [01-infrastructure.md](01-infrastructure.md#ovhcloud), [08-llm-provider-setup.md](08-llm-provider-setup.md#ovhcloud-integration)
+- API key management → [08-llm-provider-setup.md](08-llm-provider-setup.md#api-key-architecture)
 - Security hardening → [06-security.md](06-security.md)
 
 **Agent Management**
@@ -72,6 +75,7 @@ This knowledge base consolidates information from industry leaders like **Pieter
 
 **Cost & Security**
 - Pricing breakdown → [05-cost-optimization.md](05-cost-optimization.md)
+- Subscription vs API pricing → [08-llm-provider-setup.md](08-llm-provider-setup.md#subscription-vs-pay-per-use-decision-matrix)
 - Prompt caching → [05-cost-optimization.md](05-cost-optimization.md#1-prompt-caching-critical)
 - Security checklist → [06-security.md](06-security.md)
 
@@ -258,11 +262,11 @@ The knowledge base supports progressive enhancement:
 
 ## Knowledge Base Stats
 
-- **Total Content**: ~8,500+ lines across 8 documents
-- **Code Examples**: 150+ production-ready scripts
+- **Total Content**: ~9,500+ lines across 9 documents
+- **Code Examples**: 160+ production-ready scripts
 - **Real-world Examples**: 13 detailed setups
 - **Learning Paths**: 5 structured tutorials
-- **Reading Time**: ~6 hours for complete knowledge base
+- **Reading Time**: ~7 hours for complete knowledge base
 
 ## Contributing
 

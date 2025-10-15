@@ -20,8 +20,15 @@ Running Claude Code agents continuously can incur significant costs if not manag
 |------|-----------|-------------|----------|
 | **Free** | $0 | Very limited | Testing |
 | **Pro** | $20 | ~45 messages/5hrs | Light development |
-| **Max** | $100 | 5x Pro | Heavy use |
+| **Max** | $100 | 5x Pro (~unlimited) | Heavy use, continuous agents |
 | **Max+** | $200 | 20x Pro | Very heavy use |
+
+**Max Plan Advantages**:
+- ✅ **Essentially unlimited usage** for most continuous agent workloads
+- ✅ **Very high rate limits** - Support 20-50+ parallel agents on single API key
+- ✅ **Predictable costs** - $100/mo regardless of token usage
+- ✅ **One key for all agents** - No need for multiple subscriptions
+- ✅ **Best value for 24/7 agents** - Pays for itself vs API at ~$100 usage/month
 
 ### Key Insights
 
@@ -29,6 +36,39 @@ Running Claude Code agents continuously can incur significant costs if not manag
 - **Batch API provides 50% discount** (both input/output)
 - **Prompt caching** is critical for continuous agents
 - **Fixed-cost subscriptions** better for heavy users
+- **One API key serves unlimited agents** - No need for multiple subscriptions
+
+### API Key Management
+
+**Do you need multiple API keys?**
+
+**No, in most cases** - A single API key can:
+- Serve unlimited parallel agents
+- Work across multiple VMs
+- Handle 20-50+ simultaneous sessions
+- Aggregate all usage for cost tracking
+
+**Only use multiple API keys when**:
+- ❌ **Multiple customers/projects** - Need separate billing
+- ❌ **Different teams** - Want isolated cost tracking
+- ❌ **Hit rate limits** - Rare with Max subscription
+- ❌ **Testing vs production** - Want to separate environments
+
+**Common misconception**: "I need a separate $20 Pro subscription per agent"
+**Reality**: One Max $100 subscription serves all your agents at once.
+
+**Example**:
+```bash
+# ❌ Wasteful: 5 Pro subscriptions = $100/mo for 5 agents
+export API_KEY_1="sk-ant-agent1"  # $20
+export API_KEY_2="sk-ant-agent2"  # $20
+export API_KEY_3="sk-ant-agent3"  # $20
+# ... etc
+
+# ✅ Better: 1 Max subscription = $100/mo for 20+ agents
+export ANTHROPIC_API_KEY="sk-ant-main"  # $100
+# All agents use this same key
+```
 
 ## Cost Calculation Examples
 

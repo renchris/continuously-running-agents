@@ -28,6 +28,24 @@ This guide covers the infrastructure setup for running Claude Code agents 24/7 i
   - Official DigitalOcean MCP server for Claude integration
   - Good documentation for Claude Code setup
 
+#### OVHCloud
+- **Cost**: Starting at $5-8/month (Public Cloud)
+- **Global Presence**: Data centers in US, Europe, Asia-Pacific
+- **Public Cloud Instances**:
+  - s1-2: 1 vCPU, 2GB RAM, 10GB SSD (~$5/mo)
+  - s1-4: 1 vCPU, 4GB RAM, 20GB SSD (~$8/mo)
+  - b2-7: 2 vCPU, 7GB RAM, 50GB SSD (~$15/mo)
+- **Benefits**:
+  - Competitive pricing
+  - Flexible hourly or monthly billing
+  - Good European presence
+  - OpenStack-based infrastructure
+- **Setup**:
+  - Web console: <https://us.ovhcloud.com/manager/>
+  - Create Public Cloud project
+  - Launch instance with Ubuntu 24.04 LTS
+  - Configure SSH keys during creation
+
 #### Other Options
 - **AWS EC2**: More expensive but highly scalable
 - **Google Cloud**: Free tier available, more complex setup
@@ -287,8 +305,10 @@ sudo nano /etc/logrotate.d/claude-agent
 |-------|-------------|----------|
 | Hetzner CPX11 | €4.99 (~$5) | Solo developer, learning |
 | DigitalOcean Basic | $8 | Small projects |
+| OVHCloud s1-2 | $5 | Budget-conscious, EU presence |
 | DigitalOcean + Tailscale | $8 + free tier | Secure remote access |
 | Hetzner + Domains + SSL | ~$10 | Professional setup |
+| OVHCloud b2-7 (multi-agent) | $15 | 10-20 parallel agents |
 | Multiple agents (4GB) | $15-25 | Team/parallel workflows |
 
 ## Community Examples
