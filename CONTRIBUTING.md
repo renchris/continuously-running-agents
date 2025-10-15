@@ -172,7 +172,7 @@ We use [changesets](https://github.com/changesets/changesets) to manage versions
 After making changes, create a changeset:
 
 ```bash
-npm run changeset
+bun changeset
 ```
 
 This will:
@@ -197,7 +197,7 @@ git checkout -b feat/agent-monitoring
 # Edit files...
 
 # 2. Create changeset
-npm run changeset
+bun changeset
 # Select: minor
 # Summary: "agent monitoring dashboard with real-time metrics"
 
@@ -215,7 +215,7 @@ When ready to release:
 
 ```bash
 # 1. Version packages (consumes changesets)
-npm run version
+bun version
 
 # 2. Review CHANGELOG.md
 

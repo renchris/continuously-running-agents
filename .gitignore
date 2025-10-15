@@ -13,8 +13,10 @@
 *.bak
 *~
 
-# Node modules
+# Dependencies
 node_modules/
 
-# Package lock (not needed for documentation repo)
+# Lock files (bun uses bun.lockb)
 package-lock.json
+yarn.lock
+pnpm-lock.yaml

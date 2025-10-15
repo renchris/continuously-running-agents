@@ -283,7 +283,7 @@ git clone https://github.com/yourusername/continuously-running-agents.git
 git checkout -b feat/your-feature
 
 # 3. Make changes and create changeset
-npm run changeset
+bun changeset
 
 # 4. Commit using semantic format
 git commit -m "feat: your feature description"
