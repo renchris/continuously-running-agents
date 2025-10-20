@@ -1,0 +1,68 @@
+# Systemd Service Unit for Claude Code Agent
+#
+# This service file enables automatic startup and restart of Claude Code agents
+# on your OVHCloud instance.
+#
+# Installation:
+#   sudo cp config/claude-agent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable claude-agent
+#   sudo systemctl start claude-agent
+#
+# Management:
+#   sudo systemctl status claude-agent
+#   sudo systemctl restart claude-agent
+#   sudo systemctl stop claude-agent
+#   sudo journalctl -u claude-agent -f
+#
+# Configuration:
+#   Edit the Environment, WorkingDirectory, and ExecStart lines below
+#   to match your setup before installation.
+
+[Unit]
+Description=Claude Code Continuous Agent
+Documentation=https://github.com/renchris/continuously-running-agents
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=claude-agent
+Group=claude-agent
+WorkingDirectory=/home/claude-agent/projects/main
+
+# Environment variables
+Environment="ANTHROPIC_API_KEY=your-api-key-here"
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="HOME=/home/claude-agent"
+
+# Start agent in tmux session
+ExecStart=/usr/bin/tmux new-session -d -s claude-agent 'claude -p "Continue working on project tasks"'
+
+# Attach to existing session if it exists
+ExecStartPre=/bin/bash -c 'tmux has-session -t claude-agent && exit 1 || exit 0'
+
+# Stop agent gracefully
+ExecStop=/usr/bin/tmux send-keys -t claude-agent C-c
+ExecStop=/usr/bin/sleep 5
+ExecStop=/usr/bin/tmux kill-session -t claude-agent
+
+# Restart policy
+Restart=always
+RestartSec=30
+
+# Limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=claude-agent
+
+# Security settings (optional - adjust as needed)
+# NoNewPrivileges=true
+# PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
