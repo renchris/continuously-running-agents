@@ -902,6 +902,401 @@ chmod +x ~/scripts/track-costs.sh
 
 ## Troubleshooting
 
+### Max Plan Authentication Issues
+
+**Problem 1**: OAuth URL gets corrupted when copying from terminal
+
+**Symptoms**:
+- URL opens but shows authentication error
+- Missing hyphens in `code_challenge` parameter
+- Spaces or line breaks in URL
+- "Invalid request" error from Claude.ai
+
+**Solution**:
+```bash
+# On server: Save URL to file first
+tmux capture-pane -t claude-login -p -S -100 > /tmp/claude-login.txt
+cat /tmp/claude-login.txt | sed -n "/https:\/\/claude.ai/,/Paste code/p" | \
+  grep -v "Paste code" | grep -v "^$" | tr -d "\n" > ~/auth-url.txt
+
+# Verify URL looks correct (should be one long line)
+cat ~/auth-url.txt
+
+# On local machine: Download and copy carefully
+scp -i ~/.ssh/hetzner_claude_agent claude-agent@YOUR_IP:~/auth-url.txt ./
+cat auth-url.txt  # Copy this entire URL
+```
+
+**Common URL formatting issues**:
+- ✅ Correct: `V8j-Z1Q41ydz1pOJZ657FIA1N8FwxI8CBxQ7slLcKGI`
+- ❌ Wrong: `V8jZ1Q41ydz1pOJZ657FIA1N8FwxI8CBxQ7slLcKGI` (missing hyphen)
+- ✅ Correct: `code_challenge_method=S256`
+- ❌ Wrong: `code_challege_method=S256` (typo in parameter name)
+
+**Problem 2**: Authentication code rejected
+
+**Symptoms**:
+- "Invalid code" error after pasting authentication code
+- Code format looks wrong
+
+**Solution**:
+```bash
+# Correct code format: xxxxx#yyyyy (includes # character)
+# Example: abc123def456ghi789#jkl012mno345pqr678stu901vwx234yz
+
+# Ensure you copy the ENTIRE code including the # symbol
+# If pasting doesn't work, try typing it manually
+
+# Send code to tmux:
+tmux send-keys -t claude-login 'PASTE_FULL_CODE_HERE' Enter
+```
+
+**Problem 3**: tmux session exits before completing authentication
+
+**Symptoms**:
+- tmux session disappears after pasting code
+- Can't complete theme/security prompts
+
+**Solution**:
+```bash
+# Recreate session with longer timeout
+tmux new-session -d -s claude-login 'claude login; echo AUTHENTICATION_COMPLETE; sleep 60'
+
+# After pasting code, immediately attach to handle prompts
+tmux attach -t claude-login
+
+# Complete interactive prompts:
+# 1. Theme: Press Enter (accepts default)
+# 2. Login method: Press Enter (selects Max Plan)
+# 3. Security notes: Press Enter
+# 4. Trust directory: Press Enter (Yes)
+```
+
+**Problem 4**: "claude: command not found" after authentication
+
+**Symptoms**:
+- Authentication completes but `claude` command not available
+- `which claude` returns nothing
+
+**Solution**:
+```bash
+# Reload shell environment
+source ~/.bashrc
+
+# Verify Node.js and npm are installed
+node --version  # Should be v20.19.5
+npm --version   # Should be 10.8.2
+
+# Reinstall Claude Code if needed
+npm install -g claude-code@latest
+
+# Check installation location
+which claude  # Should show /usr/bin/claude or ~/.npm/bin/claude
+
+# Add to PATH if needed
+echo 'export PATH="$PATH:~/.npm-global/bin"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Problem 5**: Max Plan rate limits exceeded
+
+**Symptoms**:
+- "Rate limit exceeded" errors in agent logs
+- Agents stop responding frequently
+- More than 225 messages per 5 hours across all agents
+
+**Solution**:
+```bash
+# Check rate limit occurrences
+grep -i "rate limit" ~/agents/logs/*.log | wc -l
+
+# Option 1: Reduce agent count
+# If running 5 agents (45 msg/5hrs each), reduce to 3 agents (75 msg/5hrs each)
+tmux kill-session -t agent-4
+tmux kill-session -t agent-5
+
+# Option 2: Switch to API key for high-volume usage
+export ANTHROPIC_API_KEY="sk-ant-api03-..."
+echo 'export ANTHROPIC_API_KEY="sk-ant-..."' >> ~/.bashrc
+
+# Option 3: Stagger agent activity
+# Configure agents to work in shifts (e.g., agent-1,2 active 9am-5pm, agent-3,4 active 5pm-1am)
+```
+
+### Machine User Setup Issues
+
+**Problem 1**: Cannot switch to claude-agent user
+
+**Symptoms**:
+- `su - claude-agent` fails with "Authentication failure"
+- User exists but cannot login
+
+**Solution**:
+```bash
+# Verify user exists
+id claude-agent
+# Expected: uid=1000(claude-agent) gid=1000(claude-agent) groups=1000(claude-agent)
+
+# If user doesn't exist, create it
+sudo useradd -m -s /bin/bash claude-agent
+
+# Set password (optional, for direct login)
+sudo passwd claude-agent
+
+# Add to sudo group if needed
+sudo usermod -aG sudo claude-agent
+
+# Verify home directory permissions
+sudo ls -la /home/claude-agent
+# Should be owned by claude-agent:claude-agent
+
+# If permissions wrong, fix them
+sudo chown -R claude-agent:claude-agent /home/claude-agent
+```
+
+**Problem 2**: SSH key authentication fails for claude-agent user
+
+**Symptoms**:
+- Can SSH as root but not as claude-agent
+- "Permission denied (publickey)" error
+
+**Solution**:
+```bash
+# As root, set up SSH keys for claude-agent
+sudo mkdir -p /home/claude-agent/.ssh
+sudo cp ~/.ssh/authorized_keys /home/claude-agent/.ssh/
+sudo chown -R claude-agent:claude-agent /home/claude-agent/.ssh
+sudo chmod 700 /home/claude-agent/.ssh
+sudo chmod 600 /home/claude-agent/.ssh/authorized_keys
+
+# Test from local machine
+ssh -i ~/.ssh/hetzner_claude_agent claude-agent@YOUR_IP
+```
+
+**Problem 3**: claude-agent user cannot run sudo
+
+**Symptoms**:
+- "claude-agent is not in the sudoers file" error
+- Cannot install packages or modify system files
+
+**Solution**:
+```bash
+# As root, add claude-agent to sudo group
+sudo usermod -aG sudo claude-agent
+
+# Verify group membership
+groups claude-agent
+# Should show: claude-agent sudo
+
+# Test sudo access (may need to log out and back in)
+exit  # Exit current session
+ssh -i ~/.ssh/hetzner_claude_agent claude-agent@YOUR_IP
+sudo whoami  # Should return: root
+```
+
+**Problem 4**: Scripts not executable for claude-agent
+
+**Symptoms**:
+- "Permission denied" when running setup scripts
+- Scripts owned by root, not readable by claude-agent
+
+**Solution**:
+```bash
+# As root, copy scripts to claude-agent home
+sudo cp -r ~/scripts /home/claude-agent/
+sudo chown -R claude-agent:claude-agent /home/claude-agent/scripts
+
+# Make scripts executable
+sudo chmod +x /home/claude-agent/scripts/setup/*.sh
+sudo chmod +x /home/claude-agent/scripts/monitoring/*.sh
+
+# Verify permissions
+ls -la /home/claude-agent/scripts/setup/
+# Should show: -rwxr-xr-x claude-agent claude-agent
+```
+
+**Problem 5**: npm global install fails for claude-agent
+
+**Symptoms**:
+- "EACCES: permission denied" when running `npm install -g`
+- Claude Code installs to /usr/local but claude-agent can't write there
+
+**Solution**:
+```bash
+# Configure npm to use user-local directory
+mkdir -p ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH="$PATH:~/.npm-global/bin"' >> ~/.bashrc
+source ~/.bashrc
+
+# Reinstall Claude Code
+npm install -g claude-code@latest
+
+# Verify installation
+which claude  # Should show ~/.npm-global/bin/claude
+claude --version  # Should show 2.0.22
+```
+
+### Branch Protection Conflicts
+
+**Problem 1**: Cannot push to main branch - "protected branch hook declined"
+
+**Symptoms**:
+- Agent completes work but `git push` fails
+- Error: "remote: error: GH006: Protected branch update failed"
+- Error: "! [remote rejected] main -> main (protected branch hook declined)"
+
+**Solution**:
+```bash
+# Option 1: Use feature branches (recommended)
+git checkout -b feature/agent-work
+git push -u origin feature/agent-work
+# Then create PR via gh CLI:
+gh pr create --title "Agent work" --body "Automated changes"
+
+# Option 2: Disable branch protection temporarily (not recommended)
+# Go to GitHub repo → Settings → Branches → Edit main protection
+# Uncheck required checks or disable protection
+
+# Option 3: Configure machine user with bypass permissions
+# See "Machine User with Branch Protection Bypass" below
+```
+
+**Problem 2**: Required status checks prevent PR merge
+
+**Symptoms**:
+- PR created successfully but cannot merge
+- "Required status checks must pass" error
+- CI/CD tests haven't run or are failing
+
+**Solution**:
+```bash
+# Check PR status
+gh pr view 123 --json statusCheckRollup
+
+# Option 1: Wait for CI/CD to complete
+gh pr checks 123 --watch
+
+# Option 2: Add .github/workflows/agent-work.yml for automated testing
+# Configure CI to run on PR creation from agent branches
+
+# Option 3: Bypass checks with admin override (requires admin)
+gh pr merge 123 --admin --squash
+
+# Option 4: Configure branch protection to allow specific bypass
+# GitHub Settings → Branches → main →
+# Check "Allow specified actors to bypass required pull requests"
+```
+
+**Problem 3**: GitHub machine user not properly configured
+
+**Symptoms**:
+- Commits appear under agent's GitHub user
+- No attribution to dedicated machine account
+- Rate limits hit too quickly
+
+**Solution**:
+```bash
+# Create GitHub machine user account:
+# 1. Go to github.com and create new account: claude-agent-bot
+# 2. Add machine user as collaborator to repo with Write permission
+# 3. Generate Personal Access Token (PAT) for machine user
+#    - Settings → Developer settings → Personal access tokens → Fine-grained tokens
+#    - Repository access: Select your repos
+#    - Permissions: Contents (Read/Write), Pull requests (Read/Write)
+
+# Configure git to use machine user
+git config --global user.name "Claude Agent Bot"
+git config --global user.email "claude-agent-bot@users.noreply.github.com"
+
+# Set up GitHub CLI with machine user token
+gh auth login --with-token <<< "ghp_YOUR_MACHINE_USER_TOKEN"
+
+# Test authentication
+gh auth status
+```
+
+**Problem 4**: Machine user cannot bypass branch protection
+
+**Symptoms**:
+- Machine user configured but still blocked by branch protection
+- "Required reviews" prevents direct pushes even with admin
+
+**Solution**:
+```bash
+# GitHub Repository Settings → Branches → Edit main protection:
+
+# 1. Under "Allow specified actors to bypass required pull requests":
+#    - Check the box
+#    - Add your machine user: claude-agent-bot
+#    - Click "Add"
+
+# 2. Verify "enforce_admins" is disabled:
+gh api repos/OWNER/REPO/branches/main/protection --jq '.enforce_admins.enabled'
+# Should return: false
+
+# If enforce_admins is true, disable it:
+gh api -X DELETE repos/OWNER/REPO/branches/main/protection/enforce_admins
+
+# 3. Test push with machine user
+git push origin main
+# Should succeed without PR requirement
+```
+
+**Problem 5**: PR creation fails with "gh: command not found"
+
+**Symptoms**:
+- Agent tries to create PR but gh CLI not installed
+- Script errors with command not found
+
+**Solution**:
+```bash
+# Install GitHub CLI
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+  sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
+  sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install gh
+
+# Authenticate with gh CLI
+gh auth login
+
+# Test PR creation
+gh pr create --title "Test PR" --body "Test" --head feature/test --base main
+```
+
+**Problem 6**: Agent creates commits but doesn't push automatically
+
+**Symptoms**:
+- Work completes and commits locally
+- No push to remote repository
+- Branches accumulate locally
+
+**Solution**:
+```bash
+# Option 1: Configure agent to auto-push
+# Add post-commit hook: ~/.git/hooks/post-commit
+cat > ~/projects/main/.git/hooks/post-commit <<'EOF'
+#!/bin/bash
+# Auto-push commits to remote
+git push origin $(git rev-parse --abbrev-ref HEAD) 2>/dev/null || true
+EOF
+chmod +x ~/projects/main/.git/hooks/post-commit
+
+# Option 2: Schedule periodic push via cron
+(crontab -l 2>/dev/null; echo "*/15 * * * * cd ~/projects/main && git push --all origin 2>/dev/null || true") | crontab -
+
+# Option 3: Manual push script
+cat > ~/scripts/push-all.sh <<'EOF'
+#!/bin/bash
+cd ~/projects/main
+git push --all origin
+git push --tags origin
+EOF
+chmod +x ~/scripts/push-all.sh
+```
+
 ### Cannot SSH to Instance
 
 **Problem**: Connection refused or timeout
