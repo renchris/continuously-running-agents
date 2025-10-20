@@ -23,12 +23,26 @@ Running Claude Code agents continuously can incur significant costs if not manag
 | **Max** | $100 | 5x Pro (~unlimited) | Heavy use, continuous agents |
 | **Max+** | $200 | 20x Pro | Very heavy use |
 
-**Max Plan Advantages**:
-- ✅ **Essentially unlimited usage** for most continuous agent workloads
-- ✅ **Very high rate limits** - Support 20-50+ parallel agents on single API key
-- ✅ **Predictable costs** - $100/mo regardless of token usage
-- ✅ **One key for all agents** - No need for multiple subscriptions
-- ✅ **Best value for 24/7 agents** - Pays for itself vs API at ~$100 usage/month
+**IMPORTANT: Two Ways to Use Max Plan with Claude Code**
+
+**Option 1: Max Plan Account Login** (Recommended for 5-10 agents)
+- Authenticate with `claude login` using your claude.ai credentials
+- Uses your $100/mo subscription limits (~225 messages/5hrs)
+- **All agents on the VM share this limit**
+- ✅ No additional API costs beyond $100/mo subscription
+- ⚠️ May hit rate limits with 10+ very active agents
+
+**Option 2: Separate API Key** (For heavy usage)
+- Uses `ANTHROPIC_API_KEY` environment variable
+- Pay-per-token billing (separate from claude.ai subscription)
+- ✅ Higher rate limits for parallel agents
+- ⚠️ Costs $25-50+/mo additional for 5-10 agents
+
+**Max Plan Advantages (when using Option 1)**:
+- ✅ **Predictable costs** - $100/mo total (no API charges)
+- ✅ **Good for moderate usage** - 5-10 agents working intermittently
+- ✅ **Shared authentication** - One login serves all agents on VM
+- ⚠️ **Rate limits apply** - Monitor usage to avoid hitting limits
 
 ### Key Insights
 
