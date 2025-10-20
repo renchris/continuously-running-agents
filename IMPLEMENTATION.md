@@ -1236,5 +1236,11 @@ After successful deployment:
 - **Setup Time**: 25-30 minutes (vs 1-2 hours estimated)
 - **Resource Usage**: ~800MB RAM, <5% CPU idle, 4GB disk after setup
 
+**GitHub Security Model**:
+- **Machine User**: @renchris-agent (collaborator, not admin)
+- **Branch Protection**: `enforce_admins: false` enables owner bypass
+- **Result**: Owner can `git push origin main`, agent cannot (blocked by protection)
+- **Isolation**: Agent has access to 1 repo only, blocked from other 81 repos
+
 **Author**: Chris Ren
 **Last Updated**: October 20, 2025
