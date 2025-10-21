@@ -24,6 +24,7 @@ Running Claude Code agents continuously can incur significant costs if not manag
 - Cache operations scale proportionally
 
 **Legacy Models**: Older versions (Sonnet 4, Opus 4, Haiku 3.5) available at different rates.
+**Current Models (Oct 2025)**: Haiku 4.5 (budget), Sonnet 4.5 (standard), Opus 4.1 (complex).
 
 ### Subscription Plans
 
@@ -235,10 +236,10 @@ Use the right model for each task:
 
 | Task Type | Recommended Model | Cost (vs Sonnet 4.5) |
 |-----------|------------------|-------------------|
-| Routine refactoring | Haiku 3.5 | 73% cheaper |
+| Routine refactoring | Haiku 4.5 | 67% cheaper |
 | Standard features | Sonnet 4.5 | Baseline |
-| Complex architecture | Opus 4 | 5× more expensive |
-| Simple fixes | Haiku 3.5 | 73% cheaper |
+| Complex architecture | Opus 4.1 | 5× more expensive |
+| Simple fixes | Haiku 4.5 | 67% cheaper |
 | Planning/reasoning | Sonnet 4.5 | Baseline |
 
 #### Dynamic Model Switching
@@ -251,13 +252,13 @@ TASK_TYPE=$1
 
 case $TASK_TYPE in
     "simple"|"fix"|"refactor")
-        MODEL="claude-haiku-3-5"
+        MODEL="claude-haiku-4-5"
         ;;
     "feature"|"implementation")
         MODEL="claude-sonnet-4-5"
         ;;
     "architecture"|"planning")
-        MODEL="claude-opus-4"
+        MODEL="claude-opus-4-1"
         ;;
     *)
         MODEL="claude-sonnet-4-5"
@@ -270,16 +271,16 @@ claude --model $MODEL -p "task details"
 #### Subagent Model Assignment (Eric Zakariasson Pattern)
 
 ```bash
-# Planning agent: Use GPT-5 or Opus 4
-cursor-agent -p "analyze architecture and create plan" --model opus-4
+# Planning agent: Use GPT-5 or Opus 4.1
+cursor-agent -p "analyze architecture and create plan" --model opus-4-1
 
 # Implementation agents: Use Sonnet 4.5
 for task in "${TASKS[@]}"; do
-    cursor-agent -p "$task" --model sonnet-4 &
+    cursor-agent -p "$task" --model sonnet-4-5 &
 done
 
-# Testing agent: Use Haiku 3.5
-cursor-agent -p "run tests and report" --model haiku-3-5
+# Testing agent: Use Haiku 4.5
+cursor-agent -p "run tests and report" --model haiku-4-5
 ```
 
 ### 3. Context Management
@@ -522,7 +523,7 @@ case $TASK_PRIORITY in
         ;;
     "low")
         # Low: Haiku, always batch, overnight processing
-        MODEL="haiku-3-5"
+        MODEL="haiku-4-5"
         BATCH=true
         ;;
 esac

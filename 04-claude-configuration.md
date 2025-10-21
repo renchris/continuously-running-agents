@@ -14,7 +14,7 @@ This guide covers how to configure Claude Code for autonomous, continuous operat
   - Can maintain focus for 30+ hours on tasks
   - Best at using computers
 
-- **Claude Opus 4 & Sonnet 4** (superseded by Sonnet 4.5) (May 22, 2025)
+- **Claude Opus 4.1 & Sonnet 4** (Opus 4 superseded by 4.1) (May 22, 2025)
   - Enhanced agent capabilities
   - Improved long-running task handling
 
@@ -28,11 +28,11 @@ This guide covers how to configure Claude Code for autonomous, continuous operat
 # Use Sonnet 4.5 for autonomous agents (recommended)
 claude --model claude-sonnet-4-5
 
-# Use Opus 4 for critical reasoning tasks
-claude --model claude-opus-4
+# Use Opus 4.1 for critical reasoning tasks
+claude --model claude-opus-4-1
 
-# Use Haiku 3.5 for routine/simple tasks (cost-effective)
-claude --model claude-haiku-3-5
+# Use Haiku 4.5 for routine/simple tasks (cost-effective)
+claude --model claude-haiku-4-5
 ```
 
 ## Claude Code CLI Installation

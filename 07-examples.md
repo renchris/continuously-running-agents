@@ -461,7 +461,7 @@ cat > ~/.claude-squad/templates/test-writer.json <<'EOF'
   "prompt": "You are a test writing specialist. For each file you're given:\n1. Analyze the code\n2. Write comprehensive unit tests\n3. Achieve >90% coverage\n4. Follow Jest best practices\n5. Commit tests with message: 'test: add tests for X'",
   "allowedTools": ["Read", "Write", "Edit", "Bash"],
   "workingDirectory": "tests/",
-  "model": "claude-haiku-3-5"
+  "model": "claude-haiku-4-5"
 }
 EOF
 
@@ -898,9 +898,9 @@ TASK_DESC=$2
 
 case $TASK_TYPE in
     "plan"|"architecture"|"complex")
-        # High complexity: Use Opus 4
-        MODEL="claude-opus-4"
-        echo "Using Opus 4 for complex task"
+        # High complexity: Use Opus 4.1
+        MODEL="claude-opus-4-1"
+        echo "Using Opus 4.1 for complex task"
         ;;
 
     "implement"|"feature"|"bugfix")
@@ -911,7 +911,7 @@ case $TASK_TYPE in
 
     "test"|"docs"|"refactor"|"simple")
         # Routine work: Use Haiku
-        MODEL="claude-haiku-3-5"
+        MODEL="claude-haiku-4-5"
         echo "Using Haiku for routine task"
         ;;
 
@@ -1685,14 +1685,14 @@ log_api_call() {
     # Calculate cost based on model
     local cost=0
     case $model in
-        "claude-opus-4")
+        "claude-opus-4-1")
             cost=$(echo "scale=6; ($input_tokens * 0.000015) + ($output_tokens * 0.000075)" | bc)
             ;;
         "claude-sonnet-4")
             cost=$(echo "scale=6; ($input_tokens * 0.000003) + ($output_tokens * 0.000015)" | bc)
             ;;
-        "claude-haiku-3-5")
-            cost=$(echo "scale=6; ($input_tokens * 0.0000008) + ($output_tokens * 0.000004)" | bc)
+        "claude-haiku-4-5")
+            cost=$(echo "scale=6; ($input_tokens * 0.000001) + ($output_tokens * 0.000005)" | bc)
             ;;
     esac
 

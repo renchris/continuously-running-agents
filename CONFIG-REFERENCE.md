@@ -67,7 +67,7 @@ Configuration file for Claude Code project-level settings.
 
 ```json
 {
-  "model": "claude-haiku-3-5",
+  "model": "claude-haiku-4-5",
   "maxTurns": 50,
   "temperature": 0.5,
   "allowedTools": ["read", "grep", "glob"]
@@ -79,9 +79,9 @@ Configuration file for Claude Code project-level settings.
 | Model | Use Case | Cost | Performance |
 |-------|----------|------|-------------|
 | `claude-sonnet-4-5` | Best for complex coding tasks | Medium | Best |
-| `claude-opus-4` | Critical reasoning tasks | High | Excellent |
+| `claude-opus-4-1` | Critical reasoning tasks | High | Excellent |
 | `claude-sonnet-4` | Standard development tasks | Medium | Very Good |
-| `claude-haiku-3-5` | Simple/routine tasks | Low | Good |
+| `claude-haiku-4-5` | Simple/routine tasks | Low | Good |
 
 ---
 
@@ -409,12 +409,12 @@ tmux has-session -t prod-agent-1 2>/dev/null
 
 | Task Type | Recommended Model | Cost | Speed |
 |-----------|------------------|------|-------|
-| Simple queries | `claude-haiku-3-5` | Low | Fast |
-| Routine tasks | `claude-haiku-3-5` | Low | Fast |
+| Simple queries | `claude-haiku-4-5` | Low | Fast |
+| Routine tasks | `claude-haiku-4-5` | Low | Fast |
 | Standard dev work | `claude-sonnet-4` | Medium | Medium |
 | Complex coding | `claude-sonnet-4-5` | Medium | Medium |
-| Critical reasoning | `claude-opus-4` | High | Slower |
-| Planning/architecture | `claude-opus-4` | High | Slower |
+| Critical reasoning | `claude-opus-4-1` | High | Slower |
+| Planning/architecture | `claude-opus-4-1` | High | Slower |
 
 ### 7.3 Resource Limits by Deployment Size
 
@@ -456,7 +456,7 @@ sudo systemctl start claude-agent@1
 
 ```bash
 # Use Haiku for simple tasks
-claude --model claude-haiku-3-5 -p "Simple task"
+claude --model claude-haiku-4-5 -p "Simple task"
 
 # Use Sonnet for complex tasks
 claude --model claude-sonnet-4-5 -p "Complex task"
@@ -568,7 +568,7 @@ sudo journalctl -u claude-agent@1 -f
 {
   "agents": {
     "planner": {
-      "model": "claude-opus-4",
+      "model": "claude-opus-4-1",
       "maxTurns": 30,
       "temperature": 0.8
     },
@@ -578,7 +578,7 @@ sudo journalctl -u claude-agent@1 -f
       "temperature": 0.7
     },
     "reviewer": {
-      "model": "claude-haiku-3-5",
+      "model": "claude-haiku-4-5",
       "maxTurns": 20,
       "temperature": 0.5
     }
