@@ -8,11 +8,22 @@ Running Claude Code agents continuously can incur significant costs if not manag
 
 ### API Pricing (Per Million Tokens)
 
-| Model | Input | Output | Cache Write (5min) | Cache Write (1hr) | Cache Hit |
-|-------|-------|--------|-------------------|-------------------|-----------|
-| **Sonnet 4** | $3 | $15 | $3.75 | $6 | $0.30 |
-| **Opus 4/4.1** | $15 | $75 | $18.75 | $30 | $1.50 |
-| **Haiku 3.5** | $0.80 | $4 | $1.00 | $1.60 | $0.08 |
+**Pricing Last Verified**: 2025-10-21  
+**Source**: [https://claude.com/pricing](https://claude.com/pricing)  
+⚠️ **Always verify current pricing before budgeting** - rates may change
+
+| Model | Input (≤200K) | Output (≤200K) | Cache Write | Cache Read |
+|-------|---------------|----------------|-------------|------------|
+| **Sonnet 4.5** | $3 | $15 | $3.75 | $0.30 |
+| **Opus 4.1** | $15 | $75 | $18.75 | $1.50 |
+| **Haiku 4.5** | $1 | $5 | $1.25 | $0.10 |
+
+**Note on Tiered Pricing**: Sonnet 4.5 has higher rates for contexts >200K tokens:
+- Input: $6/MTok (vs $3)
+- Output: $22.50/MTok (vs $15)
+- Cache operations scale proportionally
+
+**Legacy Models**: Older versions (Sonnet 4, Opus 4, Haiku 3.5) available at different rates.
 
 ### Subscription Plans
 
@@ -452,7 +463,7 @@ CALLS_TODAY=$(grep "$(date +%Y-%m-%d)" $LOG_FILE | wc -l)
 ESTIMATED_COST=$(echo "$CALLS_TODAY * 0.02" | bc)
 
 echo "Calls today: $CALLS_TODAY"
-echo "Estimated cost: \$$ESTIMATED_COST"
+echo "Estimated cost: $$ESTIMATED_COST"
 
 # Alert if high
 if (( $(echo "$ESTIMATED_COST > 10" | bc -l) )); then
