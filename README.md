@@ -81,7 +81,22 @@ This knowledge base consolidates information from industry leaders like **Pieter
 
 ## Quick Start
 
+### 🚀 Complete Beginner? Start Here!
+
+**New to continuously running agents?** Follow our step-by-step quick-start guide:
+
+→ **[QUICKSTART.md](QUICKSTART.md)** - Get your first agent running in 20 minutes
+
+This guide includes:
+- Prerequisites check (do you have what you need?)
+- How to get a $5/month VPS if you don't have one
+- Complete installation with expected outputs
+- Your first autonomous agent deployment
+- Troubleshooting common issues
+
 ### For the Impatient
+
+Already have a VPS and know what you're doing? Here's the speed-run:
 
 ```bash
 # 1. Get a cheap VPS (Hetzner €4.99/mo or DigitalOcean $5/mo)
@@ -323,5 +338,5 @@ MIT License - See LICENSE file for details
 ---
 
 **Built with**: Claude Code (recursively!)
-**Last Updated**: October 15, 2025
+**Last Updated**: October 20, 2025
 Test owner bypass - Mon Oct 20 12:14:35 PDT 2025
