@@ -1,5 +1,265 @@
 # Getting Started - Your Path to Continuously Running Agents
 
+## 🚀 5-Minute Quick Start for Complete Beginners
+
+**Never deployed an AI agent before? Start here!** This guide gets you from zero to a running agent in 5 minutes with copy-paste commands.
+
+### Prerequisites Check (2 minutes)
+
+Before starting, validate your environment with these commands:
+
+```bash
+# 1. Check if you have Node.js (v18.0 or higher required)
+node --version
+# Expected: v18.0.0 or higher
+# If missing: curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs
+
+# 2. Check if you have npm
+npm --version
+# Expected: 9.0.0 or higher
+# If missing: sudo apt-get install -y npm
+
+# 3. Check if you have tmux
+tmux -V
+# Expected: tmux 3.0 or higher
+# If missing: sudo apt-get install -y tmux
+
+# 4. Check if you have git
+git --version
+# Expected: git version 2.30.0 or higher
+# If missing: sudo apt-get install -y git
+
+# 5. Verify you have an Anthropic API key
+echo $ANTHROPIC_API_KEY | wc -c
+# Expected: ~108 characters (if set)
+# If missing: Get one at https://console.anthropic.com/settings/keys
+```
+
+**Don't have a VPS (cloud server)?** See [Getting a $5/month VPS](#getting-your-first-vps-5-minutes) below.
+
+### First-Time Setup (2 minutes)
+
+Copy and paste these commands one at a time:
+
+```bash
+# 1. Install Claude Code CLI globally
+npm install -g @anthropic-ai/claude-code
+
+# Validate installation
+claude --version
+# Expected output: @anthropic-ai/claude-code/2.x.x
+
+# 2. Set your API key (replace with your actual key)
+export ANTHROPIC_API_KEY="sk-ant-api03-your-key-here"
+
+# Add to bashrc for persistence
+echo 'export ANTHROPIC_API_KEY="sk-ant-api03-your-key-here"' >> ~/.bashrc
+source ~/.bashrc
+
+# 3. Validate API key works
+curl -X POST https://api.anthropic.com/v1/messages \
+  -H "x-api-key: $ANTHROPIC_API_KEY" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{"model":"claude-3-5-sonnet-20241022","max_tokens":10,"messages":[{"role":"user","content":"test"}]}'
+# Expected: JSON response with "content" field
+# If you see "authentication_error", your API key is invalid
+
+# 4. Create a project directory
+mkdir -p ~/my-first-agent && cd ~/my-first-agent
+git init
+echo "# My First Agent Project" > README.md
+git add . && git commit -m "Initial commit"
+```
+
+**Expected state after setup:**
+- ✅ Claude Code installed and working
+- ✅ API key validated and saved
+- ✅ Project directory created with git
+- ✅ Ready to launch your first agent
+
+### Your First Agent Deployment (1 minute)
+
+Launch your first continuously running agent:
+
+```bash
+# Start a new tmux session with your agent
+tmux new-session -s my-first-agent
+
+# Inside tmux, start Claude Code with a simple task
+claude -p "Help me create a simple Node.js web server that responds 'Hello World' on port 3000"
+
+# Watch as Claude creates the server!
+# When done, press Ctrl+b, then d to detach (agent keeps running)
+```
+
+**What just happened?**
+1. You created a persistent tmux session named "my-first-agent"
+2. Claude Code started working on your task autonomously
+3. You detached from the session - the agent continues working in the background
+4. You can reconnect anytime to see progress
+
+**Reconnect to your running agent:**
+```bash
+# Reattach to see what your agent is doing
+tmux attach -t my-first-agent
+
+# Detach again: Ctrl+b, then d
+```
+
+**Check all running sessions:**
+```bash
+tmux ls
+# Expected: my-first-agent: 1 windows (created Wed Oct 21 10:15:30 2025)
+```
+
+**Stop your agent:**
+```bash
+# Kill the tmux session
+tmux kill-session -t my-first-agent
+```
+
+### Validate Your Setup
+
+Run these commands to confirm everything works:
+
+```bash
+# 1. Claude Code is installed
+which claude
+# Expected: /usr/local/bin/claude or ~/.npm-global/bin/claude
+
+# 2. Tmux is working
+tmux ls 2>/dev/null && echo "✅ Tmux working" || echo "❌ No sessions running"
+
+# 3. Git is initialized
+git status
+# Expected: "On branch main" or "On branch master"
+
+# 4. API key is set
+[ -n "$ANTHROPIC_API_KEY" ] && echo "✅ API key set" || echo "❌ API key missing"
+
+# 5. Test agent can run
+echo "Testing Claude Code..."
+claude -p "Print 'Hello from Claude!' and exit" --max-turns 1
+# Expected: Agent should respond and complete
+```
+
+**All checks passed?** 🎉 Congratulations! You've successfully deployed your first continuously running agent!
+
+### Getting Your First VPS (5 minutes)
+
+**Don't have a server?** Here's how to get a $5/month VPS:
+
+**Option 1: Hetzner (Recommended - €4.99/month)**
+
+1. Go to [hetzner.com](https://www.hetzner.com/)
+2. Create account (requires ID verification in EU)
+3. Choose **CX22** instance:
+   - 2 vCPU cores
+   - 4GB RAM
+   - 40GB SSD
+   - €4.99/month (~$5.30/month)
+4. Select **Ubuntu 22.04 LTS**
+5. Add your SSH key (or create one: `ssh-keygen -t ed25519`)
+6. Launch server - you'll get an IP address
+
+**Option 2: DigitalOcean ($6/month)**
+
+1. Go to [digitalocean.com](https://www.digitalocean.com/)
+2. Create account (credit card required)
+3. Choose **Basic Droplet**:
+   - 1 vCPU
+   - 2GB RAM
+   - 50GB SSD
+   - $6/month
+4. Select **Ubuntu 22.04 LTS**
+5. Add SSH key
+6. Create droplet - you'll get an IP address
+
+**Option 3: Vultr ($5/month)**
+
+1. Go to [vultr.com](https://www.vultr.com/)
+2. Create account
+3. Choose **Cloud Compute**:
+   - 1 vCPU
+   - 1GB RAM
+   - 25GB SSD
+   - $5/month
+4. Select **Ubuntu 22.04 LTS**
+5. Add SSH key
+6. Deploy - you'll get an IP address
+
+**Connect to your new VPS:**
+```bash
+# Replace YOUR_VPS_IP with your server's IP address
+ssh root@YOUR_VPS_IP
+
+# If using SSH key:
+ssh -i ~/.ssh/id_ed25519 root@YOUR_VPS_IP
+
+# First time? You'll see a fingerprint prompt - type 'yes'
+```
+
+**Once connected, run the setup commands from "First-Time Setup" above!**
+
+### Quick Troubleshooting
+
+**Problem: `claude: command not found`**
+```bash
+# Fix: Add npm global bin to PATH
+echo 'export PATH=$PATH:~/.npm-global/bin' >> ~/.bashrc
+source ~/.bashrc
+npm config set prefix ~/.npm-global
+npm install -g @anthropic-ai/claude-code
+```
+
+**Problem: `authentication_error` from API**
+```bash
+# Fix: Check your API key
+echo $ANTHROPIC_API_KEY
+# Should output: sk-ant-api03-...
+# If empty, set it again: export ANTHROPIC_API_KEY="sk-ant-api03-your-key-here"
+```
+
+**Problem: `tmux: command not found`**
+```bash
+# Fix: Install tmux
+sudo apt-get update && sudo apt-get install -y tmux
+```
+
+**Problem: Agent keeps asking for approval**
+```bash
+# Fix: Use autonomous mode (be careful!)
+claude -p "Your task" --dangerously-skip-permissions
+# WARNING: Only use in isolated environments - agent can modify files freely
+```
+
+**Problem: Connection lost, agent stopped**
+```bash
+# Fix: That's what tmux prevents! Always run Claude inside tmux:
+tmux new -s agent-name "claude -p 'Your task'"
+# Now disconnecting won't stop the agent
+```
+
+### What's Next?
+
+**You've successfully:**
+- ✅ Installed Claude Code
+- ✅ Validated your API key
+- ✅ Deployed your first agent
+- ✅ Learned tmux basics (attach, detach, kill)
+- ✅ Understood session persistence
+
+**Next steps:**
+
+1. **Learn the paths** → See [Which Path Is Right For You?](#which-path-is-right-for-you) below
+2. **Deploy to cloud** → Follow [Path 2: Cloud Deployment](#path-2-cloud-deployment-2-3-hours)
+3. **Add mobile access** → See [03-remote-access.md](03-remote-access.md)
+4. **Run multiple agents** → Follow [Path 3: Multi-Agent System](#path-3-multi-agent-system-4-6-hours)
+5. **Optimize costs** → Read [05-cost-optimization.md](05-cost-optimization.md)
+
+---
+
 ## Overview
 
 This guide helps you navigate the knowledge base based on your skill level, use case, and goals. Whether you're a complete beginner or looking to scale to production, there's a path for you.

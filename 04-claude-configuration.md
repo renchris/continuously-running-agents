@@ -14,7 +14,7 @@ This guide covers how to configure Claude Code for autonomous, continuous operat
   - Can maintain focus for 30+ hours on tasks
   - Best at using computers
 
-- **Claude Opus 4 & Sonnet 4** (May 22, 2025)
+- **Claude Opus 4 & Sonnet 4** (superseded by Sonnet 4.5) (May 22, 2025)
   - Enhanced agent capabilities
   - Improved long-running task handling
 
