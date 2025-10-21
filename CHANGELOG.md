@@ -1,5 +1,65 @@
 # continuously-running-agents
 
+## 2.2.0
+
+### Minor Changes
+
+- [`4f5d8b6`](https://github.com/renchris/continuously-running-agents/commit/4f5d8b66cc7e98c1dc66a41073806288fc4e3e66) Thanks [@renchris](https://github.com/renchris)! - github authentication script for machine user setup
+
+- [`5c7eb4a`](https://github.com/renchris/continuously-running-agents/commit/5c7eb4a09429973cc4c9cfc78df30e7f7c99902d) Thanks [@renchris](https://github.com/renchris)! - machine user setup guide with enforce_admins discovery
+
+- [#5](https://github.com/renchris/continuously-running-agents/pull/5) [`495e5c6`](https://github.com/renchris/continuously-running-agents/commit/495e5c63810b0061a443e011e0c6dbcd3ee12dfb) Thanks [@renchris-agent](https://github.com/renchris-agent)! - Machine user setup guide with enforce_admins discovery
+
+  Comprehensive step-by-step tutorial for setting up GitHub machine users for continuous AI agents. Includes SSH configuration, repository permissions, and critical discovery about enforce_admins=false enabling owner bypass of branch protection.
+
+  Features:
+
+  - Complete GitHub machine user account creation workflow
+  - SSH key generation and configuration
+  - Branch protection strategy comparison (collaborator vs owner bypass)
+  - Security best practices and isolation strategies
+  - Troubleshooting guide for common issues
+  - Real-world examples from @renchris-agent production setup
+
+- [#4](https://github.com/renchris/continuously-running-agents/pull/4) [`f23741f`](https://github.com/renchris/continuously-running-agents/commit/f23741fb5f5b3899ac80c95733c37c3941edcd14) Thanks [@renchris-agent](https://github.com/renchris-agent)! - **New Documentation**: Production Deployment Cost Analysis
+
+  Added comprehensive cost analysis based on real production data from Oct 20, 2025 monitoring:
+
+  - Actual resource usage metrics (CPU, RAM, system load)
+  - Current per-agent costs on Hetzner infrastructure
+  - Immediate optimization path to reduce costs by 37%
+
+  This data-driven analysis replaces speculation with measurable production metrics
+  and provides actionable next steps for cost optimization.
+
+- [`81b1e61`](https://github.com/renchris/continuously-running-agents/commit/81b1e613b83a4235a62b94cfc93fe35c85384bdc) Thanks [@renchris](https://github.com/renchris)! - feat: YOLO mode autonomous agents with resource limits and monitoring
+
+  Added comprehensive YOLO mode (--dangerously-skip-permissions) support for fully autonomous Claude Code agents:
+
+  **Scripts:**
+
+  - `scripts/start-agent-yolo.sh`: Autonomous agent launcher with resource limits (2GB RAM, 200 processes, 8h timeout)
+  - `scripts/monitor-agents-yolo.sh`: Enhanced monitoring with safety alerts (CPU/RAM, stale agents, overtime)
+  - `scripts/auto-approve-agents.sh`: Automated permission approval for manual-mode agents
+  - `scripts/monitor-agents.sh`: Non-intrusive monitoring dashboard
+  - `scripts/systemd/claude-agent@.service`: Optional systemd service with kernel-level limits
+
+  **Documentation:**
+
+  - `YOLO-MODE-GUIDE.md`: Comprehensive 400+ line guide covering security analysis, usage examples, troubleshooting, and best practices
+
+  **Security:**
+
+  - Risk level: LOW (isolated server, limited GitHub permissions, branch protection enforced)
+  - Machine user has write-only access (no admin), blocked from main branch pushes
+  - Resource limits prevent runaway processes
+
+  **Testing:**
+
+  - ✅ Successfully validated autonomous task completion
+  - ✅ 4-second response time for simple tasks
+  - ✅ Clean exit with proper logging
+
 ## 2.1.0
 
 ### Minor Changes
