@@ -1,5 +1,29 @@
 # continuously-running-agents
 
+## 2.2.0
+
+### Minor Changes
+
+- **Unified Agent Knowledge System (AGENTS.md standard)**: Multi-platform agent knowledge file that works with Claude Code, Cursor, Cline, and Windsurf. Symlinked as CLAUDE.md, .cursorrules, .clinerules/rules.md, and .windsurf/rules.md for universal compatibility.
+
+- **Commit Message Convention Enforcement**: Automated validation via git hooks with strict semantic commit format (type/scope/subject). Includes helpful error messages and auto-installation script.
+
+- **YOLO Mode Autonomous Agents**: Complete autonomous agent deployment with `--dangerously-skip-permissions` flag, resource limits (CPU, RAM, disk, runtime), and comprehensive monitoring dashboard.
+
+- **Wildcard Permissions Pattern**: Complete reference guide for `.claude/settings.local.json` wildcard patterns. Eliminates 95%+ permission prompts through 145+ organized patterns (92% file size reduction from hardcoded entries). Includes production-ready example configuration.
+
+### Patch Changes
+
+- **Machine User Setup Quick Reference**: Concise cheatsheet for setting up GitHub machine users with proper security isolation. Commands + one-line explanations format.
+
+- **Production Cost Analysis**: Real deployment costs from October 20, 2025 showing actual resource usage (280MB/agent, 0.5% CPU), current cost €1.58/agent, and immediate optimization to €0.50/agent with 8 agents/server.
+
+- **GitHub Authentication Automation**: Scripts for automated GitHub CLI and SSH key setup for machine users on remote servers.
+
+- **Workflow Documentation**: Setup guides for release workflows, troubleshooting common permission issues, and Max Plan authentication via tmux.
+
+- **Settings Wildcard Patterns Documentation**: Production-ready example configuration with safety deny list for destructive operations.
+
 ## 2.1.0
 
 ### Minor Changes
