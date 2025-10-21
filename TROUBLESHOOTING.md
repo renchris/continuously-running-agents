@@ -2,7 +2,7 @@
 
 > Comprehensive troubleshooting guide for common issues when running Claude Code agents on OVHCloud infrastructure.
 
-**Last Updated**: October 15, 2025
+**Last Updated**: October 19, 2025
 **Tested On**: OVHCloud Public Cloud, Ubuntu 24.04 LTS
 
 ---
@@ -1254,6 +1254,6 @@ Include in your bug report:
 
 ---
 
-**Last Updated**: October 15, 2025
+**Last Updated**: October 19, 2025
 **Maintainer**: renchris
 **License**: MIT
