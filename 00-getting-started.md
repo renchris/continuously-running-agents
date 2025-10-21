@@ -4,6 +4,54 @@
 
 This guide helps you navigate the knowledge base based on your skill level, use case, and goals. Whether you're a complete beginner or looking to scale to production, there's a path for you.
 
+## Which Path Is Right For You?
+
+**Answer these 3 questions to find your learning path:**
+
+### Question 1: Have you used tmux before?
+
+- **YES** → Continue to Question 2
+- **NO** → Start with **Path 1** (Absolute Beginner)
+
+### Question 2: Do you have a VPS (cloud server) already?
+
+- **YES** → Continue to Question 3
+- **NO** → Start with **Path 2** (Cloud Deployment)
+
+### Question 3: What's your primary goal?
+
+- **Run a single agent 24/7** → **Path 2** (Cloud Deployment)
+- **Run multiple agents on different tasks** → **Path 3** (Multi-Agent System)
+- **Production-ready setup with monitoring** → **Path 4** (Production Grade)
+- **Maximum efficiency, minimum complexity** → **Path 5** (Pieter Levels Style)
+
+### Quick Decision Tree
+
+```
+START
+  |
+  ├─ Never used tmux? ──────────────────────────────> Path 1 (Beginner)
+  |
+  ├─ No VPS yet? ───────────────────────────────────> Path 2 (Cloud Deploy)
+  |
+  ├─ Want simple automation? ───────────────────────> Path 5 (Pieter Levels)
+  |
+  ├─ Need multiple agents? ─────────────────────────> Path 3 (Multi-Agent)
+  |
+  └─ Building production system? ───────────────────> Path 4 (Production)
+```
+
+### Still Not Sure? Use This Guide
+
+| Your Situation | Recommended Path | Time Investment |
+|----------------|------------------|----------------|
+| Complete beginner, never used Claude Code | Path 1 → Path 2 | 3-4 hours |
+| Have experience, want quick setup | Path 2 → Path 5 | 2-3 hours |
+| Team environment, need reliability | Path 2 → Path 4 | 1-2 days |
+| Solo indie hacker, love automation | Path 5 only | 2-3 hours |
+| Large codebase, need parallel work | Path 3 → Path 4 | 1-2 days |
+| Mobile developer, need remote access | Path 2 + 03-remote-access.md | 3-4 hours |
+
 ## Quick Navigation
 
 - **For the absolute beginner**: Follow **Path 1** below
