@@ -733,6 +733,129 @@ else:
 # See: 02-tmux-setup.md#multi-agent-coordination-protocol
 ```
 
+#### Migration Example: Single Agent to 5-Agent Fleet
+
+**Scenario**: You have one agent running documentation work. You want to scale to 5 specialized agents for a multi-repo project.
+
+**Before (Single Agent)**:
+```bash
+# One tmux session, one task
+tmux new -s docs-agent "claude -p 'Update all documentation'"
+
+# Agent works sequentially:
+# 1. Updates README (30 min)
+# 2. Updates API docs (45 min)
+# 3. Updates deployment guide (25 min)
+# 4. Fixes broken links (20 min)
+# 5. Updates changelog (15 min)
+# Total: ~2 hours 15 minutes
+```
+
+**After (5-Agent Fleet)**:
+```bash
+# Start 5 specialized agents in parallel
+bash scripts/start-agent-yolo.sh 1 "Update README.md with new features"
+bash scripts/start-agent-yolo.sh 2 "Update API documentation in docs/api/"
+bash scripts/start-agent-yolo.sh 3 "Update deployment guide with new cloud providers"
+bash scripts/start-agent-yolo.sh 4 "Fix all broken documentation cross-references"
+bash scripts/start-agent-yolo.sh 5 "Update CHANGELOG.md with recent releases"
+
+# Monitor all agents
+bash scripts/monitor-agents-yolo.sh
+
+# Same work completes in ~45 minutes (parallelized)
+```
+
+**Migration Steps**:
+
+1. **Identify parallelizable work**:
+   ```bash
+   # List all documentation tasks
+   ls docs/
+   # Output:
+   # README.md, api/, deployment/, troubleshooting/, changelog/
+   ```
+
+2. **Create task distribution plan**:
+   ```markdown
+   Agent 1: README.md updates (core project docs)
+   Agent 2: API documentation (technical reference)
+   Agent 3: Deployment guides (infrastructure)
+   Agent 4: Cross-reference fixes (maintenance)
+   Agent 5: Changelog maintenance (version tracking)
+   ```
+
+3. **Launch agents with specific scopes**:
+   ```bash
+   #!/bin/bash
+   # launch-doc-fleet.sh
+
+   # Agent 1: Core documentation
+   bash scripts/start-agent-yolo.sh 1 \
+     "Update README.md: add new features from v2.0, improve getting started section"
+
+   # Agent 2: API docs
+   bash scripts/start-agent-yolo.sh 2 \
+     "Update docs/api/: document new endpoints, add code examples, fix outdated examples"
+
+   # Agent 3: Deployment
+   bash scripts/start-agent-yolo.sh 3 \
+     "Update docs/deployment/: add Hetzner provider, update OVHCloud pricing, add cost calculator"
+
+   # Agent 4: Maintenance
+   bash scripts/start-agent-yolo.sh 4 \
+     "Fix broken cross-references: scan all .md files, update internal links, verify external URLs"
+
+   # Agent 5: Changelog
+   bash scripts/start-agent-yolo.sh 5 \
+     "Update CHANGELOG.md: add entries for v2.0 release, follow Keep a Changelog format"
+   ```
+
+4. **Monitor completion**:
+   ```bash
+   # Watch all agent sessions
+   watch -n 5 'tmux list-sessions | grep agent-yolo'
+
+   # Check resource usage
+   tail -f ~/agents/logs/resource-usage.log
+
+   # View individual agent progress
+   tmux attach -t agent-yolo-1  # Ctrl+b d to detach
+   ```
+
+5. **Collect results**:
+   ```bash
+   # After agents complete (or hit 8-hour timeout)
+   # Review git changes from all agents
+   git status
+   git diff
+
+   # Create single PR with all documentation updates
+   git checkout -b docs/multi-agent-update-v2.0
+   git add docs/ README.md CHANGELOG.md
+   git commit -m "docs: comprehensive v2.0 documentation update
+
+   - Update README.md with new features
+   - Add Hetzner provider to deployment guide
+   - Fix 47 broken cross-references
+   - Document new API endpoints
+   - Add CHANGELOG entries for v2.0"
+
+   gh pr create --title "docs: comprehensive v2.0 documentation update" \
+     --body "Coordinated update across 5 agents. See commit message for details."
+   ```
+
+**Key Learnings**:
+- **Time savings**: 2h 15m → 45m (3x faster)
+- **Cost**: 5 agents × 45 min = ~3.75 agent-hours total work
+- **Coordination**: Agents work independently, human merges results
+- **Resource usage**: 5 × 2GB RAM = 10GB total (ensure VM has 16GB+)
+
+**When NOT to parallelize**:
+- Tasks with dependencies (Agent 2 needs Agent 1's output)
+- Small tasks (< 15 minutes - overhead not worth it)
+- Tasks requiring deep context (better for single agent with full codebase understanding)
+
 ## Troubleshooting
 
 ### Issue: Rate Limit Errors
