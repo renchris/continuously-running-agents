@@ -233,10 +233,10 @@ Recent changes: {recent_changes}
 
 Use the right model for each task:
 
-| Task Type | Recommended Model | Cost (vs Sonnet 4) |
+| Task Type | Recommended Model | Cost (vs Sonnet 4.5) |
 |-----------|------------------|-------------------|
 | Routine refactoring | Haiku 3.5 | 73% cheaper |
-| Standard features | Sonnet 4 | Baseline |
+| Standard features | Sonnet 4.5 | Baseline |
 | Complex architecture | Opus 4 | 5× more expensive |
 | Simple fixes | Haiku 3.5 | 73% cheaper |
 | Planning/reasoning | Sonnet 4.5 | Baseline |
@@ -254,13 +254,13 @@ case $TASK_TYPE in
         MODEL="claude-haiku-3-5"
         ;;
     "feature"|"implementation")
-        MODEL="claude-sonnet-4"
+        MODEL="claude-sonnet-4-5"
         ;;
     "architecture"|"planning")
         MODEL="claude-opus-4"
         ;;
     *)
-        MODEL="claude-sonnet-4"
+        MODEL="claude-sonnet-4-5"
         ;;
 esac
 
@@ -273,7 +273,7 @@ claude --model $MODEL -p "task details"
 # Planning agent: Use GPT-5 or Opus 4
 cursor-agent -p "analyze architecture and create plan" --model opus-4
 
-# Implementation agents: Use Sonnet 4
+# Implementation agents: Use Sonnet 4.5
 for task in "${TASKS[@]}"; do
     cursor-agent -p "$task" --model sonnet-4 &
 done
@@ -346,7 +346,7 @@ batch = client.batches.create(
         {
             "custom_id": "test-gen-1",
             "params": {
-                "model": "claude-sonnet-4",
+                "model": "claude-sonnet-4-5",
                 "max_tokens": 1024,
                 "messages": [
                     {"role": "user", "content": "Generate tests for auth.js"}
@@ -511,12 +511,12 @@ TASK_PRIORITY=$1  # high, medium, low
 
 case $TASK_PRIORITY in
     "high")
-        # High priority: Sonnet 4, real-time, no batching
+        # High priority: Sonnet 4.5, real-time, no batching
         MODEL="sonnet-4"
         BATCH=false
         ;;
     "medium")
-        # Medium: Sonnet 4, but batch if possible
+        # Medium: Sonnet 4.5, but batch if possible
         MODEL="sonnet-4"
         BATCH=true
         ;;
@@ -543,7 +543,7 @@ fi
 **Goal**: Run agent 8hrs/day, <$20/month
 
 **Strategy**:
-1. Use Sonnet 4 with aggressive prompt caching
+1. Use Sonnet 4.5 with aggressive prompt caching
 2. Use Haiku for refactoring and tests (50% of work)
 3. Stay on pay-as-you-go
 4. /clear after each task
@@ -557,7 +557,7 @@ fi
 
 **Strategy**:
 1. Max subscription ($100/mo) - unlimited usage
-2. All agents use Sonnet 4
+2. All agents use Sonnet 4.5
 3. Prompt caching enabled
 4. No need to optimize aggressively
 
