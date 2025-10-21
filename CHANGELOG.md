@@ -1,5 +1,42 @@
 # continuously-running-agents
 
+## 2.6.0
+
+### Minor Changes
+
+- [#17](https://github.com/renchris/continuously-running-agents/pull/17) [`41ee34a`](https://github.com/renchris/continuously-running-agents/commit/41ee34a13f3c946a04162c8c2308add516a2836e) Thanks [@renchris-agent](https://github.com/renchris-agent)! - comprehensive 5-minute beginner quick start guide (GAP-001)
+
+  Added complete beginner quick start section at beginning of 00-getting-started.md including:
+
+  - Prerequisites check with validation commands and expected outputs
+  - First-time setup steps with copy-paste friendly commands
+  - First agent deployment walkthrough with clear explanations
+  - Setup validation checklist
+  - VPS provider options (Hetzner, DigitalOcean, Vultr) with step-by-step setup
+  - Quick troubleshooting section for common issues
+  - Clear "what's next" guidance
+
+  This addresses DOCUMENTATION-GAPS.md GAP-001 (high severity) and provides complete beginners with a copy-paste friendly path to getting their first agent running in 5 minutes.
+
+### Patch Changes
+
+- [#17](https://github.com/renchris/continuously-running-agents/pull/17) [`41ee34a`](https://github.com/renchris/continuously-running-agents/commit/41ee34a13f3c946a04162c8c2308add516a2836e) Thanks [@renchris-agent](https://github.com/renchris-agent)! - docs: documentation cleanup and standardization
+
+  **Changes**:
+
+  - **GAP-008**: Update README last updated date to October 21, 2025
+  - **GAP-009**: Standardize all model references to Sonnet 4.5 (current recommended model)
+  - **GAP-012**: Fix broken script reference in ACTUAL-DEPLOYMENT-COSTS.md
+
+  **Impact**:
+
+  - All documentation now consistently recommends Sonnet 4.5
+  - Code examples use correct model IDs (claude-sonnet-4-5)
+  - Deployment examples reference actual scripts (start-agent-yolo.sh)
+  - Older models (Sonnet 4, Claude 3.7 Sonnet) marked as superseded
+
+  Addresses 3 documentation gaps identified in DOCUMENTATION-GAPS.md analysis. No functional changes - documentation only.
+
 ## 2.5.0
 
 ### Minor Changes
