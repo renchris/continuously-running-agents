@@ -1,6 +1,6 @@
 {
   "name": "continuously-running-agents",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Comprehensive guide to building and running autonomous Claude Code agents 24/7, based on research and best practices from the community (March-October 2025).",
   "private": true,
   "repository": {
