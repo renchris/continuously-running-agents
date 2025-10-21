@@ -1,0 +1,63 @@
+[Unit]
+Description=Claude Code Agent %i (YOLO Mode)
+After=network.target
+
+[Service]
+Type=simple
+User=claude-agent
+Group=claude-agent
+WorkingDirectory=/home/claude-agent/projects/continuously-running-agents
+
+# Resource Limits
+CPUQuota=80%                    # Max 80% of one CPU core
+MemoryMax=800M                  # Max 800MB RAM
+MemoryHigh=700M                 # Soft limit at 700MB
+TasksMax=100                    # Max 100 processes/threads
+LimitNOFILE=1024                # Max 1024 open files
+LimitNPROC=100                  # Max 100 processes
+
+# Disk I/O limits (requires cgroups v2)
+IOWeight=100                    # Normal I/O priority
+IOReadBandwidthMax=/dev/sda 10M # Max 10MB/s read
+IOWriteBandwidthMax=/dev/sda 5M # Max 5MB/s write
+
+# Security hardening
+PrivateTmp=true                 # Isolated /tmp
+NoNewPrivileges=true            # Cannot gain new privileges
+ProtectSystem=strict            # Read-only /usr, /boot, /etc
+ProtectHome=read-only           # Read-only access to other home dirs
+ReadWritePaths=/home/claude-agent/projects /home/claude-agent/agents
+ProtectKernelTunables=true      # Protect /proc/sys, /sys
+ProtectKernelModules=true       # Cannot load kernel modules
+ProtectControlGroups=true       # Protect cgroup filesystem
+RestrictRealtime=true           # No realtime scheduling
+RestrictSUIDSGID=true           # No SUID/SGID bits
+
+# Network (comment out if you want to restrict network)
+# PrivateNetwork=false          # Allow network access
+# RestrictAddressFamilies=AF_INET AF_INET6  # IPv4/IPv6 only
+
+# Automatic restart on failure
+Restart=on-failure
+RestartSec=30
+StartLimitBurst=3
+StartLimitIntervalSec=600
+
+# Timeout
+TimeoutStartSec=60
+RuntimeMaxSec=28800             # 8 hours max runtime
+
+# Environment
+Environment="HOME=/home/claude-agent"
+Environment="PATH=/home/claude-agent/.nvm/versions/node/v22.11.0/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Command
+ExecStart=/usr/bin/tmux new-session -d -s agent-%i 'claude --dangerously-skip-permissions -p "Please wait for instructions"'
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=claude-agent-%i
+
+[Install]
+WantedBy=multi-user.target
