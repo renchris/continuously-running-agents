@@ -1,5 +1,112 @@
 # continuously-running-agents
 
+## 2.7.0
+
+### Minor Changes
+
+- [#20](https://github.com/renchris/continuously-running-agents/pull/20) [`f99f615`](https://github.com/renchris/continuously-running-agents/commit/f99f615282b50681d426b3c5aa9d71703b597257) Thanks [@renchris-agent](https://github.com/renchris-agent)! - feat: comprehensive agent startup failure prevention and detection
+
+  **New Documentation**:
+
+  - **AGENT-STARTUP-FAILURES.md** (411 lines): Complete troubleshooting guide
+    - Quick diagnosis decision tree
+    - 4 common failure modes with real examples and fixes
+    - Pre-flight validation checklist
+    - Debugging commands
+    - Case study: October 21, 2025 mass failures (agents 6/7/11/12)
+    - Prevention strategies for dev and production
+
+  **Script Improvements**:
+
+  - **start-agent-yolo.sh**:
+
+    - Pre-flight authentication checks (Claude binary, auth test, API connectivity)
+    - System resource validation (free RAM warning)
+    - Startup health check (warns if log <10 lines or <500 bytes after 10s)
+    - Better error messages with fix commands
+
+  - **agent-completion-watcher.sh**:
+    - Auto-detect startup failures (log <500 bytes after 30+ seconds)
+    - Mark failed agents as "error" status (prevents ghost "running" state)
+    - Automatic completion timestamps for failed agents
+
+  **Testing**:
+
+  - **test-agent-startup.sh**: Automated validation suite (6 tests)
+    - Validates all improvements exist and work correctly
+
+  **Impact**:
+
+  - **Prevents**: Silent authentication failures (90%+ of Oct 21 failure mode)
+  - **Detects**: Startup failures within 10-60 seconds (vs hours of ghost agents)
+  - **Documents**: Complete troubleshooting guide for future failures
+
+  Based on investigation of October 21, 2025 agent failures (authentication issues after 5th agent spawn).
+
+- [#18](https://github.com/renchris/continuously-running-agents/pull/18) [`8360f8e`](https://github.com/renchris/continuously-running-agents/commit/8360f8e66c0857162639a8b3b359b2d4042d1201) Thanks [@renchris-agent](https://github.com/renchris-agent)! - comprehensive 5-minute beginner quick start guide (GAP-001)
+
+  Added complete beginner quick start section at beginning of 00-getting-started.md including:
+
+  - Prerequisites check with validation commands and expected outputs
+  - First-time setup steps with copy-paste friendly commands
+  - First agent deployment walkthrough with clear explanations
+  - Setup validation checklist
+  - VPS provider options (Hetzner, DigitalOcean, Vultr) with step-by-step setup
+  - Quick troubleshooting section for common issues
+  - Clear "what's next" guidance
+
+  This addresses DOCUMENTATION-GAPS.md GAP-001 (high severity) and provides complete beginners with a copy-paste friendly path to getting their first agent running in 5 minutes.
+
+### Patch Changes
+
+- [#18](https://github.com/renchris/continuously-running-agents/pull/18) [`8360f8e`](https://github.com/renchris/continuously-running-agents/commit/8360f8e66c0857162639a8b3b359b2d4042d1201) Thanks [@renchris-agent](https://github.com/renchris-agent)! - docs(gaps): GAP-004 resolution verified and documented
+
+  **Changes**:
+
+  - **GAP-004**: Verified comprehensive multi-agent coordination troubleshooting section exists in TROUBLESHOOTING.md:774-1140
+  - Updated DOCUMENTATION-GAPS.md to mark GAP-004 as resolved (2025-10-21)
+  - Updated executive summary to reflect 1/24 gaps resolved (4.2% completion)
+  - Updated severity summary table with resolution status
+  - Updated priority list to mark GAP-004 as completed
+
+  **Verification**:
+  The multi-agent coordination section in TROUBLESHOOTING.md includes:
+
+  - Agents Fighting Over Same File (774-843): symptoms, diagnosis, solutions, prevention
+  - Git Merge Conflicts from Multi-Agent Work (844-873): resolution steps
+  - Lock File Conflicts (875-932): comprehensive diagnosis and solutions
+  - Coordination JSON Diagnostics (934-996): JSON parsing errors and fixes
+  - Agents Not Picking Up Tasks (998-1058): task assignment troubleshooting
+  - Coordination Dashboard Not Updating (1060-1087): dashboard issues
+  - Too Many Agents, System Overloaded (1089-1137): resource management
+  - References coordination protocol at 02-tmux-setup.md:640-816 (line 1139)
+
+  **Impact**:
+
+  - HIGH severity gap closed
+  - Users now have complete troubleshooting guide for 10+ agent setups
+  - All required elements from GAP-004 specification addressed
+  - Documentation gaps reduced from 24 to 23
+
+  Addresses documentation gap GAP-004 identified in DOCUMENTATION-GAPS.md analysis. No functional changes - documentation status update only.
+
+- [#18](https://github.com/renchris/continuously-running-agents/pull/18) [`8360f8e`](https://github.com/renchris/continuously-running-agents/commit/8360f8e66c0857162639a8b3b359b2d4042d1201) Thanks [@renchris-agent](https://github.com/renchris-agent)! - docs: documentation cleanup and standardization
+
+  **Changes**:
+
+  - **GAP-008**: Update README last updated date to October 21, 2025
+  - **GAP-009**: Standardize all model references to Sonnet 4.5 (current recommended model)
+  - **GAP-012**: Fix broken script reference in ACTUAL-DEPLOYMENT-COSTS.md
+
+  **Impact**:
+
+  - All documentation now consistently recommends Sonnet 4.5
+  - Code examples use correct model IDs (claude-sonnet-4-5)
+  - Deployment examples reference actual scripts (start-agent-yolo.sh)
+  - Older models (Sonnet 4, Claude 3.7 Sonnet) marked as superseded
+
+  Addresses 3 documentation gaps identified in DOCUMENTATION-GAPS.md analysis. No functional changes - documentation only.
+
 ## 2.6.0
 
 ### Minor Changes
