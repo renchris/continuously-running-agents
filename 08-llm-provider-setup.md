@@ -430,6 +430,52 @@ curl -I https://api.anthropic.com
 
 **If all validations pass, your OVHCloud instance is ready!**
 
+##### Troubleshooting First Connection
+
+**Problem: "Permission denied (publickey)"**
+```bash
+# Solution 1: Specify the correct private key
+ssh -i ~/.ssh/ovhcloud_claude ubuntu@51.195.xxx.xxx
+
+# Solution 2: Add key to SSH agent
+ssh-add ~/.ssh/ovhcloud_claude
+ssh ubuntu@51.195.xxx.xxx
+
+# Solution 3: Check key permissions (must be 600)
+chmod 600 ~/.ssh/ovhcloud_claude
+```
+
+**Problem: "Connection timed out"**
+```bash
+# Check if instance is running in OVHCloud console
+# Verify firewall allows SSH (port 22)
+# Try using instance's public IP (not hostname)
+
+# Test connectivity
+ping 51.195.xxx.xxx
+telnet 51.195.xxx.xxx 22
+```
+
+**Problem: "No such identity: ~/.ssh/ovhcloud_claude"**
+```bash
+# You didn't save the key in the expected location
+# Find your key:
+ls ~/.ssh/
+# Use correct path:
+ssh -i ~/.ssh/actual_key_name ubuntu@51.195.xxx.xxx
+```
+
+**Problem: Wrong username**
+```bash
+# OVHCloud Ubuntu images use 'ubuntu' user, not 'root'
+# ❌ ssh root@51.195.xxx.xxx
+# ✅ ssh ubuntu@51.195.xxx.xxx
+
+# If you selected a different OS:
+# Debian: ssh debian@51.195.xxx.xxx
+# CentOS: ssh centos@51.195.xxx.xxx
+```
+
 ##### Cost Estimate
 
 - **d2-2 instance**: $0.015/hour × 730 hours/month = **$10.95/month**
@@ -437,7 +483,7 @@ curl -I https://api.anthropic.com
 - **Bandwidth** (1TB included): $0
 - **Total estimated cost**: ~$11/month
 
-**Next Steps**: Continue with ["03. Configure Network"](#3-configure-network) above to set up firewall rules.
+**Next Steps**: Continue with [Initial Server Setup](#3-initial-server-setup) below to install Claude Code and configure your instance.
 
 
 #### 3. Initial Server Setup
@@ -1116,5 +1162,5 @@ After setting up your LLM provider:
 
 ---
 
-**Last Updated**: October 15, 2025
-**Tested On**: OVHCloud s1-4, b2-7 instances with Anthropic Max subscription
+**Last Updated**: October 21, 2025
+**Tested On**: OVHCloud d2-2, b2-7, s1-4 instances with Anthropic Max subscription
