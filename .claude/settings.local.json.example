@@ -1,0 +1,168 @@
+{
+  "$schema": "https://docs.anthropic.com/schemas/claude-code/settings.json",
+  "allowedPaths": [
+    // ============================================================================
+    // WILDCARD PERMISSIONS CONFIGURATION
+    // ============================================================================
+    // This file demonstrates wildcard patterns for autonomous Claude Code agents.
+    // Reduces permission prompts by 95%+ through explicit allow/deny patterns.
+    //
+    // SECURITY WARNING: Review patterns carefully before enabling.
+    // Overly broad patterns (e.g., "/**", "**/*") grant excessive permissions.
+    //
+    // See WILDCARD-VALIDATION-REPORT.md for pattern syntax and validation results.
+    // ============================================================================
+
+    // ----------------------------------------------------------------------------
+    // DOCUMENTATION FILES (Read/Write)
+    // ----------------------------------------------------------------------------
+    "**/*.md",                          // All markdown files
+    "docs/**/*.txt",                    // Text files in docs/
+    "README*",                          // README variants (README, README.md, etc.)
+    "CONTRIBUTING*",                    // Contributing guides
+    "CHANGELOG*",                       // Changelogs
+    "LICENSE*",                         // License files
+
+    // ----------------------------------------------------------------------------
+    // SCRIPTS AND AUTOMATION (Read/Execute)
+    // ----------------------------------------------------------------------------
+    "**/*.sh",                          // Shell scripts (any depth)
+    "scripts/**/*",                     // Everything in scripts/
+    "**/*.bash",                        // Bash scripts
+    ".husky/**/*.sh",                   // Git hooks
+
+    // ----------------------------------------------------------------------------
+    // CONFIGURATION FILES (Read/Write)
+    // ----------------------------------------------------------------------------
+    ".claude/**/*.json",                // Claude Code settings
+    "config/**/*.{conf,yaml,yml,json}", // Configuration directory
+    "*.config.js",                      // Root-level config files
+    "tsconfig*.json",                   // TypeScript configs
+    "package.json",                     // Package manifest
+    "package-lock.json",                // Lock file (read preferred)
+
+    // ----------------------------------------------------------------------------
+    // SOURCE CODE (Read/Write)
+    // ----------------------------------------------------------------------------
+    "src/**/*.{js,ts,jsx,tsx}",         // Source files
+    "lib/**/*.{js,ts}",                 // Library files
+    "test/**/*.{js,ts,jsx,tsx}",        // Test files
+    "**/__tests__/**/*.{js,ts}",        // Jest test directories
+
+    // ----------------------------------------------------------------------------
+    // BUILD AND DIST (Read-Only Preferred)
+    // ----------------------------------------------------------------------------
+    "build/**/*",                       // Build output
+    "dist/**/*",                        // Distribution files
+    ".next/**/*",                       // Next.js build cache
+    "out/**/*",                         // Output directories
+
+    // ----------------------------------------------------------------------------
+    // LOGS (Write)
+    // ----------------------------------------------------------------------------
+    "logs/**/*.log",                    // Log files
+    "*.log",                            // Root-level logs
+    "*.log.*",                          // Rotated logs (app.log.1, etc.)
+
+    // ----------------------------------------------------------------------------
+    // TEMPORARY AND CACHE (Read/Write)
+    // ----------------------------------------------------------------------------
+    ".cache/**/*",                      // Cache directories
+    "tmp/**/*",                         // Temporary files (project-local)
+    "temp/**/*",                        // Temp directories
+
+    // ============================================================================
+    // DENY PATTERNS (Security - Higher Priority)
+    // ============================================================================
+    // NOTE: Precedence of deny vs allow patterns needs verification.
+    // Assumed: Deny patterns override allow patterns (standard glob behavior).
+    // See WILDCARD-VALIDATION-REPORT.md section "Pattern Precedence".
+    // ============================================================================
+
+    // ----------------------------------------------------------------------------
+    // DEPENDENCIES (Never Touch)
+    // ----------------------------------------------------------------------------
+    "!**/node_modules/**",              // Node.js dependencies
+    "!**/vendor/**",                    // Vendored dependencies (Ruby, PHP, etc.)
+    "!**/.pnpm/**",                     // pnpm store
+    "!**/.yarn/**",                     // Yarn cache
+
+    // ----------------------------------------------------------------------------
+    // VERSION CONTROL (Never Touch)
+    // ----------------------------------------------------------------------------
+    "!**/.git/**",                      // Git internals
+    "!**/.svn/**",                      // Subversion
+    "!**/.hg/**",                       // Mercurial
+
+    // ----------------------------------------------------------------------------
+    // SECRETS AND CREDENTIALS (Never Touch)
+    // ----------------------------------------------------------------------------
+    "!**/.env",                         // Environment variables
+    "!**/.env.*",                       // All env files (.env.local, .env.production)
+    "!**/credentials*.json",            // Credential files
+    "!**/secrets*.{json,yaml,yml}",    // Secret files
+    "!**/*secret*",                     // Any file with "secret" in name
+    "!**/*password*",                   // Any file with "password" in name
+    "!**/*token*",                      // Any file with "token" in name
+
+    // ----------------------------------------------------------------------------
+    // SSH AND KEYS (Never Touch)
+    // ----------------------------------------------------------------------------
+    "!**/.ssh/**",                      // SSH keys and config
+    "!**/*.pem",                        // PEM certificates/keys
+    "!**/*.key",                        // Private keys
+    "!**/*.crt",                        // Certificates
+
+    // ----------------------------------------------------------------------------
+    // SYSTEM DIRECTORIES (Never Touch)
+    // ----------------------------------------------------------------------------
+    "!/etc/**",                         // System configuration
+    "!/usr/**",                         // System binaries
+    "!/var/**",                         // System state
+    "!/sys/**",                         // System kernel interface
+    "!/proc/**",                        // Process information
+    "!/home/**/.ssh/**",                // User SSH keys
+    "!/root/**",                        // Root user home
+
+    // ----------------------------------------------------------------------------
+    // HIDDEN FILES (Selective)
+    // ----------------------------------------------------------------------------
+    "!**/.**/",                         // Hidden directories (cautious)
+    // NOTE: This might be too restrictive. Test carefully.
+    // Consider allowing specific hidden files:
+    // ".gitignore",
+    // ".editorconfig",
+    // ".prettierrc"
+
+    // ----------------------------------------------------------------------------
+    // LARGE FILES (Avoid)
+    // ----------------------------------------------------------------------------
+    "!**/*.{dmg,iso,img}",              // Disk images
+    "!**/*.{zip,tar,gz,bz2,7z}",        // Archives
+    "!**/*.{mp4,avi,mov,mkv}",          // Video files
+    "!**/*.{psd,ai,sketch}",            // Large design files
+    // NOTE: Add more extensions as needed
+
+    // ============================================================================
+    // EXPERIMENTAL PATTERNS (Uncomment to test)
+    // ============================================================================
+    // The following patterns need empirical validation:
+
+    // Brace expansion (NEEDS TESTING)
+    // "docs/{guide,tutorial,reference}/**/*.md",
+    // "**/*.{test,spec}.{js,ts}",
+
+    // Character classes (NEEDS TESTING)
+    // "**/[!.]*.json",                  // Non-hidden JSON files
+    // "**/[a-z]*.md",                   // Lowercase-prefixed markdown
+
+    // Absolute paths (NEEDS TESTING)
+    // "/home/claude-agent/projects/**/*.md",
+
+    // Complex negations (NEEDS TESTING)
+    // "src/**/*.ts",                    // Allow TypeScript in src/
+    // "!src/**/*.test.ts"               // But not test files
+  ],
+
+  "systemPrompt": "Autonomous agent with scoped wildcard permissions. See YOLO-MODE-GUIDE.md for operational guidelines."
+}
