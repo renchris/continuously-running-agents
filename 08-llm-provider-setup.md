@@ -282,7 +282,163 @@ openstack server create \
 
 # Get IP address
 openstack server show claude-agent-primary -c addresses
+
+#### OVHCloud Setup Walkthrough (Complete First-Time Guide - 15 minutes)
+
+**For users who have never used OVHCloud before**. This walkthrough provides step-by-step instructions from account creation to first SSH connection.
+
+##### Step 1: Create Account (2 minutes)
+
+1. Go to [https://us.ovhcloud.com/public-cloud/](https://us.ovhcloud.com/public-cloud/)
+2. Click **"Start Now"** or **"Sign Up"**
+3. Fill in:
+   - Email address
+   - Password (strong password required)
+   - Country/region
+4. Verify email (check inbox for verification link)
+5. Log in at [https://us.ovhcloud.com/manager/](https://us.ovhcloud.com/manager/)
+
+**Validation**: You should see the OVHCloud Manager dashboard
+
+##### Step 2: Add Payment Method (2 minutes)
+
+1. In OVHCloud Manager, go to **Billing** → **Payment Methods**
+2. Click **"Add a payment method"**
+3. Choose:
+   - **Credit Card** (Visa/Mastercard/Amex), OR
+   - **PayPal**
+4. Enter payment details and save
+5. (Optional) Set as default payment method
+
+**Note**: OVHCloud may place a small temporary hold ($1-2) to verify the card
+
+**Validation**: Payment method shows "Active" status
+
+##### Step 3: Create Public Cloud Project (1 minute)
+
+1. In OVHCloud Manager, click **"Public Cloud"** in left sidebar
+2. Click **"Create a project"**
+3. Enter project name (e.g., "Claude Agents Production")
+4. Confirm billing contact
+5. Click **"Create project"**
+
+**Validation**: You'll see a project ID (e.g., )
+
+##### Step 4: Generate SSH Key (if you don't have one) (2 minutes)
+
+Run this on your **local machine** (not in OVHCloud):
+
+```bash
+# Generate SSH key pair
+ssh-keygen -t ed25519 -C "your-email@example.com" -f ~/.ssh/ovhcloud_claude
+
+# Expected output:
+# Generating public/private ed25519 key pair.
+# Your identification has been saved in /Users/you/.ssh/ovhcloud_claude
+# Your public key has been saved in /Users/you/.ssh/ovhcloud_claude.pub
+
+# Display public key (you'll need this in next step)
+cat ~/.ssh/ovhcloud_claude.pub
+
+# Expected output:
+# ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... your-email@example.com
 ```
+
+**Copy the public key** (starts with ) - you'll paste it in Step 5
+
+##### Step 5: Create Instance (5 minutes)
+
+1. In your Public Cloud project, click **"Instances"** → **"Create an instance"**
+
+2. **Select Region**:
+   - US-East (Vint Hill, VA) - Best for US users
+   - EU-West (Gravelines, France) - Best for EU users
+   - CA-East (Beauharnois, Canada) - Best for Canada
+   
+   *Tip: Choose closest region to reduce latency*
+
+3. **Choose Instance Type**:
+   - Recommended: **General Purpose - d2-2** 
+   - Specs: 2 vCPU, 4 GB RAM, 25 GB SSD
+   - Cost: ~$0.015/hour ≈ **$10/month**
+   
+   *Alternatives*:
+   - Budget: **b2-7** (2 vCPU, 7 GB RAM) - $0.013/hour
+   - Performance: **s1-4** (1 vCPU, 4 GB RAM) - $0.023/hour
+
+4. **Select Operating System**:
+   - Choose **"Ubuntu 24.04 LTS"** (recommended)
+   - Or **"Ubuntu 22.04 LTS"** (also works well)
+
+5. **Add SSH Key**:
+   - Click **"Add a key"**
+   - Paste your public key from Step 4
+   - Give it a name (e.g., "my-laptop-key")
+   - Click **"Add this key"**
+
+6. **Configure Instance**:
+   - Instance name: 
+   - Leave other settings as default
+   - Click **"Create instance"**
+
+7. **Wait for Provisioning** (~2 minutes)
+   - Status will change:  → 
+   - IP address will appear when ready
+
+**Validation**: Instance shows "Active" with an IP address (e.g., )
+
+##### Step 6: First SSH Connection (3 minutes)
+
+Once instance is **Active**:
+
+```bash
+# Connect via SSH (replace IP with your instance's IP)
+ssh -i ~/.ssh/ovhcloud_claude ubuntu@51.195.xxx.xxx
+
+# First connection will ask to verify fingerprint:
+# The authenticity of host '51.195.xxx.xxx' can't be established.
+# ED25519 key fingerprint is SHA256:xxxxxxxxxxxxx.
+# Are you sure you want to continue connecting (yes/no)?
+
+# Type: yes
+
+# Expected output:
+# Warning: Permanently added '51.195.xxx.xxx' (ED25519) to known hosts.
+# Welcome to Ubuntu 24.04 LTS
+# ubuntu@claude-agent-01:~$
+```
+
+**Validation Commands**:
+
+```bash
+# Check system info
+uname -a
+# Expected: Linux claude-agent-01 5.15.0-xxx-generic ... x86_64 GNU/Linux
+
+# Check resources
+free -h
+# Expected: Total memory around 3.9Gi
+
+# Check disk space
+df -h /
+# Expected: Avail around 20G
+
+# Check internet connectivity
+curl -I https://api.anthropic.com
+# Expected: HTTP/2 200
+```
+
+**If all validations pass, your OVHCloud instance is ready!**
+
+##### Cost Estimate
+
+- **d2-2 instance**: $0.015/hour × 730 hours/month = **$10.95/month**
+- **Storage** (25GB included): $0
+- **Bandwidth** (1TB included): $0
+- **Total estimated cost**: ~$11/month
+
+**Next Steps**: Continue with ["03. Configure Network"](#3-configure-network) above to set up firewall rules.
+
 
 #### 3. Initial Server Setup
 
