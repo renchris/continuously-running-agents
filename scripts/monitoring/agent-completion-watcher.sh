@@ -235,6 +235,20 @@ update_agent_status() {
         fi
     fi
 
+    # Detect Startup Failures (v2.7.0+)
+    # Silent failures: log <500 bytes after 30+ seconds indicates pre-Claude-init failure
+    if [ -n "$log_file" ] && [ -f "$log_file" ]; then
+        local uptime=$(get_session_uptime_seconds "$session")
+        if [ "$uptime" -gt 30 ]; then
+            local log_size=$(stat -c%s "$log_file" 2>/dev/null || stat -f%z "$log_file" 2>/dev/null || echo 0)
+            if [ "$log_size" -lt 500 ]; then
+                status="error"
+                exit_code=1
+                log_warning "Agent $agent_num: Startup failure detected (log ${log_size}B after ${uptime}s)"
+            fi
+        fi
+    fi
+
     # Get current resources
     local resources=$(get_agent_resources "$session")
     local cpu=$(echo "$resources" | jq -r '.cpu // 0')
