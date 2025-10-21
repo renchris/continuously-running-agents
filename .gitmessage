@@ -1,0 +1,26 @@
+# <type>(<scope>): <subject>
+#
+# RULES:
+# 1. Lowercase (except proper nouns, titles, acronyms)
+# 2. NO redundant verbs:
+#    ❌ feat: add    ✅ feat:
+#    ❌ fix: adjust  ✅ fix:
+#    ❌ docs: update ✅ docs:
+# 3. Imperative mood (give a command)
+# 4. No period at end
+# 5. Max 50 chars for subject
+#
+# TYPES: feat, fix, docs, style, refactor, perf, test, build, ci, chore
+#
+# GOOD EXAMPLES:
+# feat: multi-agent coordination protocol
+# fix: tmux session persistence
+# docs(security): GitHub machine user setup
+# docs(cost): production deployment analysis
+#
+# BAD EXAMPLES:
+# feat: Add multi-agent coordination (redundant "Add", capitalized)
+# fix: Fix the tmux session (redundant "Fix")
+# docs: Update README (redundant "Update", capitalized)
+#
+# See CONTRIBUTING.md for full conventions

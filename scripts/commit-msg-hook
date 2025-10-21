@@ -1,0 +1,95 @@
+#!/bin/bash
+# Git commit-msg hook to enforce semantic commit conventions
+# Install: bash scripts/install-git-hooks.sh
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Skip merge commits
+if echo "$COMMIT_MSG" | grep -qE "^Merge (branch|pull request)"; then
+    exit 0
+fi
+
+# Skip revert commits
+if echo "$COMMIT_MSG" | grep -qE "^Revert "; then
+    exit 0
+fi
+
+# Get the first line (subject)
+SUBJECT=$(echo "$COMMIT_MSG" | head -n1)
+
+# Check format: <type>(<scope>): <subject> or <type>: <subject>
+if ! echo "$SUBJECT" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9-]+\))?: .+"; then
+    echo "❌ COMMIT REJECTED: Invalid commit format"
+    echo ""
+    echo "Expected: <type>(<scope>): <subject>"
+    echo "Got: $SUBJECT"
+    echo ""
+    echo "Valid types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert"
+    echo "See CONTRIBUTING.md or .gitmessage for examples"
+    exit 1
+fi
+
+# Extract subject (after type and scope)
+SUBJECT_TEXT=$(echo "$SUBJECT" | sed -E 's/^[a-z]+(\([a-z0-9-]+\))?: //')
+
+# Check for redundant verbs
+REDUNDANT_VERBS="^(add|adds|adding|update|updates|updating|fix|fixes|fixing|remove|removes|removing|delete|deletes|deleting|create|creates|creating|implement|implements|implementing|configure|configures|configuring|adjust|adjusts|adjusting|change|changes|changing|modify|modifies|modifying|improve|improves|improving|enhance|enhances|enhancing|refactor|refactors|refactoring)"
+
+if echo "$SUBJECT_TEXT" | grep -qiE "$REDUNDANT_VERBS"; then
+    REDUNDANT_WORD=$(echo "$SUBJECT_TEXT" | grep -oiE "$REDUNDANT_VERBS" | head -1)
+
+    echo "❌ COMMIT REJECTED: Redundant verb detected"
+    echo ""
+    echo "Subject: $SUBJECT"
+    echo "Redundant word: '$REDUNDANT_WORD'"
+    echo ""
+    echo "The commit type already implies the action. Remove redundant verbs:"
+    echo "  ❌ feat: add user auth    ✅ feat: user authentication"
+    echo "  ❌ fix: adjust login      ✅ fix: login error handling"
+    echo "  ❌ docs: update README    ✅ docs: README improvements"
+    echo ""
+    echo "See CONTRIBUTING.md for examples"
+    exit 1
+fi
+
+# Check for capitalization (first letter should be lowercase, except proper nouns)
+FIRST_CHAR=$(echo "$SUBJECT_TEXT" | cut -c1)
+if echo "$FIRST_CHAR" | grep -qE "[A-Z]"; then
+    # Allow certain proper nouns and acronyms
+    ALLOWED_CAPS="^(GitHub|GitLab|Docker|Kubernetes|API|UI|UX|CPU|RAM|HTTP|HTTPS|SSH|AWS|GCP|Azure|README|CHANGELOG|CONTRIBUTING|LICENSE|Hetzner|OVHCloud|Claude|Anthropic|Node|React|Vue|Angular|TypeScript|JavaScript|Python|Rust|Go|Java)"
+
+    if ! echo "$SUBJECT_TEXT" | grep -qE "$ALLOWED_CAPS"; then
+        echo "❌ COMMIT REJECTED: Subject should start with lowercase"
+        echo ""
+        echo "Subject: $SUBJECT"
+        echo "First char: '$FIRST_CHAR' (uppercase)"
+        echo ""
+        echo "Use lowercase except for proper nouns, titles, and acronyms:"
+        echo "  ❌ docs(cost): Add cost analysis    ✅ docs(cost): cost analysis"
+        echo "  ❌ fix: Broken link                 ✅ fix: broken link"
+        echo "  ✅ docs: GitHub authentication      (proper noun)"
+        echo "  ✅ feat: API endpoint               (acronym)"
+        echo ""
+        echo "See CONTRIBUTING.md for rules"
+        exit 1
+    fi
+fi
+
+# Check for period at end
+if echo "$SUBJECT" | grep -qE "\.$"; then
+    echo "⚠️  WARNING: Subject line should not end with a period"
+    echo "Subject: $SUBJECT"
+    echo ""
+fi
+
+# Check subject length
+SUBJECT_LEN=${#SUBJECT}
+if [ "$SUBJECT_LEN" -gt 72 ]; then
+    echo "⚠️  WARNING: Subject line is too long ($SUBJECT_LEN chars, max 72)"
+    echo "Subject: $SUBJECT"
+    echo ""
+fi
+
+# All checks passed
+exit 0
