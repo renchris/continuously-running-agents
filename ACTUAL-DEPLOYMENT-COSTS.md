@@ -36,7 +36,10 @@
 
 ```bash
 # Deploy 3 more agents to existing server
-./deploy-agent.sh --server cpx21-01 --count 3
+# Agent 1: Documentation updates
+bash ~/scripts/start-agent-yolo.sh 1 "Update documentation for cost optimization"
+# Agent 2-3: Feature development  
+bash ~/scripts/start-agent-yolo.sh 2 "Implement feature X"
 
 # Monitor during ramp-up
 watch -n 60 free -h
