@@ -2,7 +2,7 @@
 
 > Comprehensive troubleshooting guide for common issues when running Claude Code agents on OVHCloud infrastructure.
 
-**Last Updated**: October 19, 2025
+**Last Updated**: October 21, 2025
 **Tested On**: OVHCloud Public Cloud, Ubuntu 24.04 LTS
 
 ---
@@ -779,6 +779,7 @@ sudo ufw status | grep 443
 - Git merge conflicts
 - Agents overwriting each other's work
 - Lock file errors
+- Multiple agents editing same file simultaneously
 
 **Diagnosis**:
 ```bash
@@ -788,6 +789,14 @@ check_active_work
 
 # Check for duplicate file claims
 jq '.[] | .file' ~/agents/coordination/active-work.json | sort | uniq -d
+
+# Verify coordination directory structure
+ls -la ~/agents/coordination/
+# Should contain: active-work.json, completed-work.json, planned-work.json, agent-locks/
+
+# Check git status for conflicts
+cd ~/projects/main
+git status | grep -i "conflict"
 ```
 
 **Solutions**:
@@ -800,51 +809,190 @@ init_coordination
 # 2. Check for stale locks
 check_stale_agents
 
-# 3. Clean up stale locks
+# 3. Clean up stale locks (older than 30 minutes)
 cleanup_stale_agents
 
 # 4. Manually release a file
 release_work "agent-3" "src/file.ts"
 
-# 5. Restart coordination system
+# 5. Resolve git merge conflicts
+cd ~/projects/main
+git status
+# Edit conflicting files manually
+git add <resolved-files>
+git commit -m "fix: resolve multi-agent merge conflicts"
+
+# 6. Restart coordination system (last resort)
 rm -rf ~/agents/coordination/*
+source ~/scripts/coordination/agent-coordination.sh
 init_coordination
-# Re-add tasks
+# Re-add tasks to planned-work.json
 ```
 
-### Coordination Files Corrupted
+**Prevention**:
+```bash
+# Use coordination protocol for all multi-agent setups
+# See: 02-tmux-setup.md:640-816
+
+# Launch agents with coordination enabled
+bash ~/scripts/coordination/launch-agent-team.sh 5
+
+# Monitor coordination dashboard
+tmux attach -t agent-dashboard
+```
+
+### Git Merge Conflicts from Multi-Agent Work
 
 **Symptoms**:
 ```
-parse error: Invalid JSON
-# or
-jq: error: unexpected token
+CONFLICT (content): Merge conflict in src/file.ts
+Automatic merge failed; fix conflicts and then commit the result.
 ```
 
 **Solutions**:
 
 ```bash
-# 1. Check JSON files
+# 1. Identify which agents caused conflict
+git log --oneline --graph --all | head -20
+
+# 2. Check active-work.json for concurrent edits
+jq '.[] | select(.file == "src/file.ts")' ~/agents/coordination/active-work.json
+
+# 3. Resolve conflicts manually
+cd ~/projects/main
+git status
+# Edit files, keep desired changes
+
+# 4. Mark as resolved
+git add <conflicted-files>
+git commit -m "fix: resolve conflict in src/file.ts"
+
+# 5. Update coordination to prevent recurrence
+# Add file to exclusive-lock list if needed
+# See coordination protocol in 02-tmux-setup.md:640-816
+```
+
+### Lock File Errors
+
+**Symptoms**:
+```
+Error: File is locked by agent-2
+# or
+Cannot claim work: file already locked
+# or
+jq: error: Lock file exists
+```
+
+**Diagnosis**:
+```bash
+# Check all lock files
+ls -la ~/agents/coordination/agent-locks/
+
+# Check which agent owns each lock
+for lock in ~/agents/coordination/agent-locks/*.lock; do
+    echo "Lock: $lock"
+    cat "$lock"
+done
+
+# Check if locked agent is still running
+tmux ls | grep agent-2
+ps aux | grep "agent-2"
+
+# Check lock timestamps
+find ~/agents/coordination/agent-locks/ -name "*.lock" -exec ls -lh {} \;
+```
+
+**Solutions**:
+
+```bash
+# 1. If agent crashed, remove stale lock
+source ~/scripts/coordination/agent-coordination.sh
+cleanup_stale_agents
+
+# 2. Manually remove specific lock (if agent is dead)
+# First verify agent is not running:
+tmux ls | grep agent-2
+# If not running:
+rm ~/agents/coordination/agent-locks/agent-2.lock
+
+# 3. Force release work
+source ~/scripts/coordination/agent-coordination.sh
+# Edit active-work.json to remove entry
+jq 'map(select(.agent != "agent-2"))' ~/agents/coordination/active-work.json > tmp.json
+mv tmp.json ~/agents/coordination/active-work.json
+
+# 4. Clear all locks (emergency only)
+rm -rf ~/agents/coordination/agent-locks/*
+echo "[]" > ~/agents/coordination/active-work.json
+
+# 5. Restart coordination from clean slate
+rm -rf ~/agents/coordination/*
+source ~/scripts/coordination/agent-coordination.sh
+init_coordination
+```
+
+### Coordination JSON Diagnostics
+
+**Symptoms**:
+```
+parse error: Invalid JSON
+# or
+jq: error: unexpected token at line X, column Y
+# or
+Expected value but got EOF
+```
+
+**Diagnosis**:
+```bash
+# Validate each JSON file
 cd ~/agents/coordination
 jq '.' active-work.json
 jq '.' completed-work.json
 jq '.' planned-work.json
 
-# 2. Backup and reset
+# Check for empty or truncated files
+ls -lh ~/agents/coordination/*.json
+cat ~/agents/coordination/active-work.json
+
+# Look for JSON syntax errors
+python3 -m json.tool active-work.json
+
+# Inspect active-work.json structure
+jq '.[] | {agent, file, started}' ~/agents/coordination/active-work.json
+```
+
+**Solutions**:
+
+```bash
+# 1. Backup current state
 cd ~/agents/coordination
-cp active-work.json active-work.json.backup
+mkdir -p ~/backups/coordination-$(date +%Y%m%d-%H%M%S)
+cp *.json ~/backups/coordination-$(date +%Y%m%d-%H%M%S)/
+
+# 2. Try to repair JSON
+# If file is truncated/empty:
 echo "[]" > active-work.json
 echo "[]" > completed-work.json
 
-# 3. Remove lock files
+# If file has syntax errors, try manual fix:
+nano active-work.json
+# Common issues: missing comma, trailing comma, unclosed bracket
+
+# 3. Validate after repair
+jq '.' active-work.json
+jq '.' completed-work.json
+jq '.' planned-work.json
+
+# 4. Remove lock files
 rm -rf ~/agents/coordination/agent-locks/*
 
-# 4. Reinitialize
+# 5. Reinitialize coordination
 source ~/scripts/coordination/agent-coordination.sh
 init_coordination
 
-# 5. If needed, restore from backup
-# Manually fix JSON and restore
+# 6. Restore from backup (if repair failed)
+cp ~/backups/coordination-*/active-work.json.backup active-work.json
+# Fix errors manually, then validate
 ```
 
 ### Agents Not Picking Up Tasks
@@ -852,6 +1000,7 @@ init_coordination
 **Symptoms**:
 - Tasks in queue but agents idle
 - "No tasks available" despite having tasks
+- Agents waiting indefinitely
 
 **Diagnosis**:
 ```bash
@@ -865,6 +1014,16 @@ jq '.[] | select(.assigned != null)' ~/agents/coordination/planned-work.json
 
 # Check if files are locked
 jq '.[] | .file' ~/agents/coordination/active-work.json
+
+# Verify agents are running coordination script
+tmux ls
+for i in {1..5}; do
+    echo "=== agent-$i ==="
+    tmux capture-pane -t agent-$i -p | tail -5
+done
+
+# Check coordination statistics
+show_stats
 ```
 
 **Solutions**:
@@ -875,17 +1034,109 @@ cd ~/agents/coordination
 jq 'map(.assigned = null)' planned-work.json > planned-work.json.tmp
 mv planned-work.json.tmp planned-work.json
 
-# 2. Check agent is running proper script
+# 2. Verify agent is running coordination-enabled script
 tmux attach -t agent-1
-# Verify it's running the coordinated agent loop
+# Should see: "Agent agent-1 working on: <file> - <task>"
+# If not, agent is running wrong script
 
 # 3. Manually trigger task pick-up
 source ~/scripts/coordination/agent-coordination.sh
 get_next_task "agent-1"
 
-# 4. Restart agents
-bash ~/scripts/coordination/spawn-agents.sh 5
+# 4. Check for priority issues
+jq '.[] | {id, priority, assigned}' ~/agents/coordination/planned-work.json
+# Ensure high-priority tasks have priority: 1 (lower number = higher priority)
+
+# 5. Restart agents with coordination
+for i in {1..5}; do
+    tmux kill-session -t agent-$i 2>/dev/null
+done
+bash ~/scripts/coordination/launch-agent-team.sh 5
+
+# 6. Monitor dashboard to verify agents are working
+tmux attach -t agent-dashboard
 ```
+
+### Coordination Dashboard Not Updating
+
+**Symptoms**:
+- Dashboard shows stale data
+- Statistics not changing
+- Active work count incorrect
+
+**Solutions**:
+
+```bash
+# 1. Restart dashboard
+tmux kill-session -t agent-dashboard
+bash ~/scripts/coordination/agent-dashboard.sh
+
+# 2. Verify coordination files are being updated
+watch -n 2 'ls -lh ~/agents/coordination/*.json'
+
+# 3. Check for file permission issues
+ls -la ~/agents/coordination/
+chmod 644 ~/agents/coordination/*.json
+chmod 755 ~/agents/coordination/agent-locks/
+
+# 4. Verify jq is working correctly
+source ~/scripts/coordination/agent-coordination.sh
+show_stats
+
+# 5. Check for JSON corruption (see section above)
+```
+
+### Too Many Agents, System Overloaded
+
+**Symptoms**:
+- High CPU usage (>90%)
+- High memory usage
+- Coordination operations slow
+- Lock contention
+
+**Diagnosis**:
+```bash
+# Check system resources
+htop
+free -h
+
+# Count active agents
+tmux ls | wc -l
+jq 'length' ~/agents/coordination/active-work.json
+
+# Check coordination file sizes
+du -sh ~/agents/coordination/
+```
+
+**Solutions**:
+
+```bash
+# 1. Reduce agent count
+# Kill highest numbered agents
+for i in {6..10}; do
+    tmux kill-session -t agent-$i 2>/dev/null
+done
+
+# 2. Clean up completed work
+# Archive old completions
+cd ~/agents/coordination
+jq '.[-100:]' completed-work.json > completed-work-recent.json
+mv completed-work-recent.json completed-work.json
+
+# 3. Upgrade instance size
+# See: 01-infrastructure.md for larger instances
+
+# 4. Optimize coordination polling
+# Edit coordinated-agent.sh to increase sleep time:
+# sleep 60  # Instead of sleep 10
+
+# 5. Use staggered starts
+bash ~/scripts/coordination/launch-agent-team.sh 3
+sleep 30
+bash ~/scripts/coordination/launch-agent-team.sh 2
+```
+
+**Reference**: For detailed coordination protocol implementation, see 02-tmux-setup.md:640-816
 
 ---
 
@@ -1254,6 +1505,6 @@ Include in your bug report:
 
 ---
 
-**Last Updated**: October 19, 2025
+**Last Updated**: October 21, 2025
 **Maintainer**: renchris
 **License**: MIT
