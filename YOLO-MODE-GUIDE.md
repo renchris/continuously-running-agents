@@ -390,8 +390,7 @@ On Hetzner CPX21 (4GB RAM):
 - `scripts/monitor-agents-yolo.sh` - Enhanced monitoring
 - `scripts/systemd/README.md` - Systemd service setup
 - `scripts/monitor-agents.sh` - Basic monitoring (non-YOLO)
-- `MACHINE-USER-STATUS.md` - GitHub permissions details
-- `SECURITY-MODEL.md` - Branch protection setup
+- `MACHINE-USER-GUIDE.md` - GitHub permissions and security setup
 
 ---
 
