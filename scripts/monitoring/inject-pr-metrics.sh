@@ -198,8 +198,9 @@ if [ "$INSIGHT_COUNT" -eq 0 ]; then
     INSIGHTS="✅ No performance issues detected - agent executed efficiently"
 fi
 
-# Build metrics table
-METRICS_TABLE=$(cat <<EOF
+# Build metrics table in temp file
+TMP_METRICS=$(mktemp)
+cat > "$TMP_METRICS" <<EOF
 
 ---
 
@@ -232,18 +233,23 @@ ${FILES_LIST:+**Files Created**: $FILES_LIST}
 
 *Metrics injected by [\`inject-pr-metrics.sh\`](../scripts/monitoring/inject-pr-metrics.sh)*
 EOF
-)
 
-# Append metrics to PR body
-NEW_BODY="${PR_BODY}${METRICS_TABLE}"
+# Append current PR body and metrics to temp file
+TMP_BODY=$(mktemp)
+echo "$PR_BODY" > "$TMP_BODY"
+cat "$TMP_METRICS" >> "$TMP_BODY"
 
-# Update PR
+# Update PR using --body-file to avoid heredoc issues
 log "Updating PR #$PR_NUMBER with runtime metrics..."
 
-gh pr edit "$PR_NUMBER" --body "$NEW_BODY" || {
+gh pr edit "$PR_NUMBER" --body-file "$TMP_BODY" || {
     log_error "Failed to update PR #$PR_NUMBER"
+    rm -f "$TMP_METRICS" "$TMP_BODY"
     exit 1
 }
+
+# Cleanup temp files
+rm -f "$TMP_METRICS" "$TMP_BODY"
 
 log_success "Successfully injected metrics into PR #$PR_NUMBER"
 log "Duration: $DURATION_HUMAN | Peak CPU: $PEAK_CPU% | Peak RAM: ${PEAK_RAM}MB"
