@@ -24,12 +24,20 @@ set -euo pipefail
 # Configuration
 STATUS_DIR="$HOME/agents/status"
 LOG_DIR="$HOME/agents/logs"
+TASKS_DIR="$HOME/agents/tasks"
 PROJECT_DIR="$HOME/projects/continuously-running-agents"
+SCRIPTS_DIR="$HOME/scripts"
 CHECK_INTERVAL=60  # Check every 60 seconds
+
+# Auto-restart configuration
+AUTO_RESTART="${AUTO_RESTART:-true}"  # Enable by default, set to false to disable
+MAX_RESTART_ATTEMPTS=3
+RESTART_DELAY=10  # Seconds between restart attempts
 
 # Ensure directories exist
 mkdir -p "$STATUS_DIR"
 mkdir -p "$LOG_DIR"
+mkdir -p "$TASKS_DIR"
 
 # Color codes for output
 RED='\033[0;31m'
@@ -168,6 +176,118 @@ check_created_files() {
     echo "$files"
 }
 
+# Get task metadata for agent
+get_agent_task() {
+    local agent_num=$1
+    local task_file="$TASKS_DIR/agent-${agent_num}-task.txt"
+
+    if [ -f "$task_file" ]; then
+        cat "$task_file"
+    else
+        echo "Unknown task"
+    fi
+}
+
+# Determine failure reason from log
+determine_failure_reason() {
+    local log_file=$1
+
+    if [ ! -f "$log_file" ]; then
+        echo "Log file not found"
+        return
+    fi
+
+    # Check last 100 lines for error patterns
+    local log_tail=$(tail -100 "$log_file" 2>/dev/null)
+
+    if echo "$log_tail" | grep -qi "authentication\|login\|unauthorized\|invalid.*key"; then
+        echo "Authentication failure"
+    elif echo "$log_tail" | grep -qi "timeout\|timed out"; then
+        echo "Timeout"
+    elif echo "$log_tail" | grep -qi "out of memory\|oom\|memory.*exhausted"; then
+        echo "Out of memory"
+    elif echo "$log_tail" | grep -qi "connection.*refused\|network.*error\|api.*unavailable"; then
+        echo "Network/API error"
+    elif echo "$log_tail" | grep -qi "rate.*limit\|quota.*exceeded"; then
+        echo "Rate limit exceeded"
+    elif echo "$log_tail" | grep -qi "permission.*denied\|access.*denied"; then
+        echo "Permission denied"
+    elif [ -n "$log_file" ]; then
+        local log_size=$(stat -c%s "$log_file" 2>/dev/null || stat -f%z "$log_file" 2>/dev/null || echo 0)
+        if [ "$log_size" -lt 500 ]; then
+            echo "Startup failure (silent crash)"
+        else
+            echo "Unknown error"
+        fi
+    else
+        echo "Unknown error"
+    fi
+}
+
+# Restart agent
+restart_agent() {
+    local agent_num=$1
+    local status_file="$STATUS_DIR/agent-${agent_num}-status.json"
+
+    # Get current restart attempts
+    local restart_attempts=$(jq -r '.restart_attempts // 0' "$status_file")
+
+    # Check if we've exceeded max attempts
+    if [ "$restart_attempts" -ge "$MAX_RESTART_ATTEMPTS" ]; then
+        log_error "Agent $agent_num: Max restart attempts ($MAX_RESTART_ATTEMPTS) reached, giving up"
+        return 1
+    fi
+
+    # Get task description
+    local task=$(get_agent_task "$agent_num")
+
+    if [ "$task" = "Unknown task" ]; then
+        log_error "Agent $agent_num: Cannot restart - task metadata not found"
+        return 1
+    fi
+
+    # Increment restart attempts
+    restart_attempts=$((restart_attempts + 1))
+    local restart_time=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+
+    # Update status file with restart info
+    jq \
+        --argjson attempts "$restart_attempts" \
+        --arg restart_time "$restart_time" \
+        '.restart_attempts = $attempts |
+         .last_restart = $restart_time |
+         .recovery_successful = null' \
+        "$status_file" > "${status_file}.tmp"
+    mv "${status_file}.tmp" "$status_file"
+
+    log_warning "Agent $agent_num: Attempting restart ($restart_attempts/$MAX_RESTART_ATTEMPTS) in ${RESTART_DELAY}s..."
+    log "Agent $agent_num: Task: $task"
+
+    # Wait before restart
+    sleep "$RESTART_DELAY"
+
+    # Kill existing session if still exists
+    local session="prod-agent-${agent_num}"
+    if tmux has-session -t "$session" 2>/dev/null; then
+        log "Agent $agent_num: Killing existing session"
+        tmux kill-session -t "$session" 2>/dev/null || true
+        sleep 2
+    fi
+
+    # Start new agent session
+    log "Agent $agent_num: Starting new session..."
+
+    # Call start-agent-yolo.sh script
+    if [ -f "$SCRIPTS_DIR/start-agent-yolo.sh" ]; then
+        bash "$SCRIPTS_DIR/start-agent-yolo.sh" "$agent_num" "$task" > /dev/null 2>&1
+        log_success "Agent $agent_num: Restart initiated"
+        return 0
+    else
+        log_error "Agent $agent_num: Cannot find start-agent-yolo.sh script"
+        return 1
+    fi
+}
+
 # Initialize agent status file
 init_agent_status() {
     local agent_num=$1
@@ -193,6 +313,10 @@ init_agent_status() {
   "files_created": [],
   "exit_code": null,
   "errors": [],
+  "restart_attempts": 0,
+  "last_restart": null,
+  "failure_reason": null,
+  "recovery_successful": null,
   "resources": {
     "cpu_percent": 0,
     "ram_mb": 0,
@@ -203,6 +327,41 @@ init_agent_status() {
 EOF
 
     log "Initialized status for agent-$agent_num"
+}
+
+# Inject metrics into PR if newly created
+inject_pr_metrics() {
+    local agent_num=$1
+    local pr_number=$2
+    local inject_script="$(dirname "$0")/inject-pr-metrics.sh"
+
+    if [ ! -f "$inject_script" ]; then
+        log_warning "Metrics injection script not found: $inject_script"
+        return 1
+    fi
+
+    # Check if metrics already injected (tracked in status file)
+    local status_file="$STATUS_DIR/agent-${agent_num}-status.json"
+    local injected=$(jq -r '.metrics_injected // false' "$status_file" 2>/dev/null)
+
+    if [ "$injected" = "true" ]; then
+        return 0  # Already injected
+    fi
+
+    log "Agent-$agent_num: Injecting metrics into PR #$pr_number..."
+
+    if bash "$inject_script" "$pr_number" "$agent_num" 2>&1 | tee -a "$LOG_DIR/metrics-injection.log"; then
+        log_success "Agent-$agent_num: Metrics injected into PR #$pr_number"
+
+        # Mark as injected in status file
+        jq '.metrics_injected = true' "$status_file" > "${status_file}.tmp"
+        mv "${status_file}.tmp" "$status_file"
+
+        return 0
+    else
+        log_error "Agent-$agent_num: Failed to inject metrics into PR #$pr_number"
+        return 1
+    fi
 }
 
 # Update agent status
@@ -237,6 +396,9 @@ update_agent_status() {
 
     # Detect Startup Failures (v2.7.0+)
     # Silent failures: log <500 bytes after 30+ seconds indicates pre-Claude-init failure
+    local failure_detected=false
+    local failure_reason=""
+
     if [ -n "$log_file" ] && [ -f "$log_file" ]; then
         local uptime=$(get_session_uptime_seconds "$session")
         if [ "$uptime" -gt 30 ]; then
@@ -244,9 +406,18 @@ update_agent_status() {
             if [ "$log_size" -lt 500 ]; then
                 status="error"
                 exit_code=1
-                log_warning "Agent $agent_num: Startup failure detected (log ${log_size}B after ${uptime}s)"
+                failure_detected=true
+                failure_reason=$(determine_failure_reason "$log_file")
+                log_warning "Agent $agent_num: Startup failure detected (log ${log_size}B after ${uptime}s) - Reason: $failure_reason"
             fi
         fi
+    fi
+
+    # Detect other failure modes
+    if [ "$status" = "error" ] && [ "$failure_detected" = false ]; then
+        failure_detected=true
+        failure_reason=$(determine_failure_reason "$log_file")
+        log_warning "Agent $agent_num: Failure detected - Reason: $failure_reason"
     fi
 
     # Get current resources
@@ -289,6 +460,7 @@ update_agent_status() {
         --argjson peak_ram "$peak_ram" \
         --arg prs "$prs" \
         --arg files "$files" \
+        --arg failure_reason "$failure_reason" \
         '.status = $status |
          .exit_code = $exit_code |
          .completed = $completed |
@@ -298,10 +470,45 @@ update_agent_status() {
          .resources.cpu_percent = $cpu |
          .resources.ram_mb = $ram_mb |
          .resources.peak_cpu = $peak_cpu |
-         .resources.peak_ram_mb = $peak_ram' \
+         .resources.peak_ram_mb = $peak_ram |
+         .failure_reason = (if $failure_reason != "" then $failure_reason else .failure_reason end)' \
         "$status_file" > "${status_file}.tmp"
 
     mv "${status_file}.tmp" "$status_file"
+
+    # Auto-inject metrics into PRs when detected
+    if [ -n "$prs" ]; then
+        # Get previous PR list to detect new PRs
+        local prev_prs=$(jq -r '.pr_created | join(" ")' "$status_file" 2>/dev/null || echo "")
+
+        # Extract PR numbers from the current list
+        for pr in $prs; do
+            # Extract number from "#123" format
+            local pr_num=$(echo "$pr" | sed 's/#//')
+
+            # Check if this PR was in previous list
+            if ! echo "$prev_prs" | grep -q "#${pr_num}"; then
+                log "Agent-$agent_num: New PR detected: #$pr_num"
+                # Inject metrics (function handles idempotency)
+                inject_pr_metrics "$agent_num" "$pr_num" || true
+            fi
+        done
+    fi
+
+    # Auto-restart logic
+    if [ "$AUTO_RESTART" = "true" ] && [ "$failure_detected" = "true" ] && [ "$status" = "error" ]; then
+        log_warning "Agent $agent_num: Auto-restart enabled, attempting recovery..."
+
+        if restart_agent "$agent_num"; then
+            # Mark recovery as successful
+            jq '.recovery_successful = true' "$status_file" > "${status_file}.tmp"
+            mv "${status_file}.tmp" "$status_file"
+        else
+            # Mark recovery as failed
+            jq '.recovery_successful = false' "$status_file" > "${status_file}.tmp"
+            mv "${status_file}.tmp" "$status_file"
+        fi
+    fi
 }
 
 # Update summary file
