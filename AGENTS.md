@@ -99,7 +99,7 @@ git commit -m "..."  # Hook validates format
 **Essential Reading**:
 - `README.md` (327 lines): Complete project overview, learning paths
 - `CONTRIBUTING.md` (432 lines): Full commit conventions, contributing workflow
-- `AGENT-GUIDELINES.md` (in cloud-agent repo): AI agent operation policy
+- `AGENT-OPERATIONS.md` (in cloud-agent repo): AI agent operation policy, prompts, optimization
 
 **Core Guides** (read in order):
 1. `00-getting-started.md`: Structured learning paths for all skill levels
@@ -128,7 +128,7 @@ git commit -m "..."  # Hook validates format
 - Title follows commit format
 - One PR = one logical change
 - Reference related issues/docs
-- **NEVER merge to main without approval** (see AGENT-GUIDELINES.md)
+- **NEVER merge to main without approval** (see AGENT-OPERATIONS.md)
 
 ## Common Tasks
 
